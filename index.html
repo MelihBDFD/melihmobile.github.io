@@ -40,7 +40,7 @@
                         <label for="taskCategory">Kategori</label>
                         <div class="inline-field">
                             <select id="taskCategory" name="category"></select>
-                            <button type="button" id="addCategory">+</button>
+                            <button type="button" id="addCategory" data-tooltip="Yeni kategori ekle">+</button>
                         </div>
                     </div>
                     <div class="field">
@@ -234,7 +234,16 @@
         </article>
     </template>
 
-    <script src="app.js" type="module"></script>
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <h3>Yeni Kategori Ekle</h3>
+            <input id="newCategoryModalInput" type="text" placeholder="Kategori adı" maxlength="50">
+            <div class="modal-actions">
+                <button id="cancelCategory">İptal</button>
+                <button id="saveCategory" class="primary">Ekle</button>
+            </div>
+        </div>
+    </div>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js')

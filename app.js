@@ -1,3 +1,61 @@
+const dom = {
+    body: document.body,
+    form: document.getElementById("taskForm"),
+    title: document.getElementById("taskTitle"),
+    description: document.getElementById("taskDescription"),
+    categorySelect: document.getElementById("taskCategory"),
+    prioritySelect: document.getElementById("taskPriority"),
+    dueDate: document.getElementById("taskDueDate"),
+    subtaskList: document.getElementById("subtaskList"),
+    subtaskInput: document.getElementById("subtaskInput"),
+    addSubtask: document.getElementById("addSubtask"),
+    checklistContainer: document.getElementById("checklistItems"),
+    checklistInput: document.getElementById("checklistInput"),
+    addChecklist: document.getElementById("addChecklist"),
+    saveTask: document.getElementById("saveTask"),
+    addCategoryBtn: document.getElementById("addCategory"),
+    searchInput: document.getElementById("searchInput"),
+    filterCategory: document.getElementById("filterCategory"),
+    filterPriority: document.getElementById("filterPriority"),
+    filterStartDate: document.getElementById("filterStartDate"),
+    filterEndDate: document.getElementById("filterEndDate"),
+    sortSelect: document.getElementById("sortSelect"),
+    listViewBtn: document.getElementById("listViewBtn"),
+    cardViewBtn: document.getElementById("cardViewBtn"),
+    resetFilters: document.getElementById("resetFilters"),
+    taskContainer: document.getElementById("taskContainer"),
+    archiveContainer: document.getElementById("archiveContainer"),
+    template: document.getElementById("taskTemplate"),
+    selectAll: document.getElementById("selectAll"),
+    clearSelection: document.getElementById("clearSelection"),
+    bulkComplete: document.getElementById("bulkComplete"),
+    bulkDelete: document.getElementById("bulkDelete"),
+    bulkArchive: document.getElementById("bulkArchive"),
+    statTotal: document.getElementById("statTotal"),
+    statCompleted: document.getElementById("statCompleted"),
+    statActive: document.getElementById("statActive"),
+    statOverdue: document.getElementById("statOverdue"),
+    categoryChart: document.getElementById("categoryChart"),
+    dailySummary: document.getElementById("dailySummary"),
+    archivePanel: document.getElementById("archivePanel"),
+    clearArchive: document.getElementById("clearArchive"),
+    themeToggle: document.getElementById("themeToggle"),
+    notificationToggle: document.getElementById("notificationToggle"),
+    exportData: document.getElementById("exportData"),
+    importData: document.getElementById("importData"),
+    settingsForm: document.getElementById("settingsForm"),
+    defaultSort: document.getElementById("defaultSort"),
+    defaultView: document.getElementById("defaultView"),
+    reminderLead: document.getElementById("reminderLead"),
+    categoryManager: document.getElementById("categoryManager"),
+    newCategoryInput: document.getElementById("newCategoryInput"),
+    addCategoryFromSettings: document.getElementById("addCategoryFromSettings"),
+    categoryModal: document.getElementById("categoryModal"),
+    newCategoryModalInput: document.getElementById("newCategoryModalInput"),
+    cancelCategory: document.getElementById("cancelCategory"),
+    saveCategory: document.getElementById("saveCategory")
+};
+
 function renderTaskList(container, tasks) {
     container.innerHTML = "";
     if (!tasks.length) {
@@ -351,6 +409,40 @@ function setupDragAndDrop() {
     });
 }
 
+function handleAddCategory() {
+    dom.categoryModal.classList.add("show");
+    dom.newCategoryModalInput.focus();
+}
+
+function saveNewCategory() {
+    const name = dom.newCategoryModalInput.value.trim();
+    if (!name) return;
+    if (!state.categories.includes(name)) {
+        state.categories.push(name);
+        saveState();
+        populateCategories();
+        dom.categorySelect.value = name;
+    }
+    dom.categoryModal.classList.remove("show");
+    dom.newCategoryModalInput.value = "";
+}
+
+function cancelNewCategory() {
+    dom.categoryModal.classList.remove("show");
+    dom.newCategoryModalInput.value = "";
+}
+
+function handleAddCategoryFromSettings() {
+    const name = dom.newCategoryInput.value.trim();
+    if (!name) return;
+    if (!state.categories.includes(name)) {
+        state.categories.push(name);
+        saveState();
+        populateCategories();
+        dom.newCategoryInput.value = "";
+    }
+}
+
 function init() {
     loadState();
     applyTheme();
@@ -393,6 +485,14 @@ function init() {
     dom.exportData.addEventListener("click", exportData);
     dom.importData.addEventListener("change", importData);
     dom.addCategoryFromSettings.addEventListener("click", handleAddCategoryFromSettings);
+    dom.saveCategory.addEventListener("click", saveNewCategory);
+    dom.cancelCategory.addEventListener("click", cancelNewCategory);
+    dom.newCategoryModalInput.addEventListener("keypress", event => {
+        if (event.key === "Enter") saveNewCategory();
+    });
+    dom.categoryModal.addEventListener("click", event => {
+        if (event.target === dom.categoryModal) cancelNewCategory();
+    });
     setupDragAndDrop();
     setInterval(checkReminders, 60000);
 }
