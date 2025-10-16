@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="To-Do PRO Mobile">
+    <title>📱 To-Do PRO Mobile - Mobil Görev Yöneticisi</title>
+    <link rel="stylesheet" href="assets/css/mobile-only.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📱</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📱</text></svg>">
+</head>
+<body>
+    <div class="mobile-app-container">
+
+        <!-- Mobile Header -->
+        <header class="mobile-app-header">
+            <div class="mobile-view-toggle-container">
+                <button onclick="showMobileLogin()" class="mobile-view-toggle-btn" title="Giriş Yap" id="mobile-login-btn">🔐</button>
+                <button onclick="toggleMobileTheme()" class="mobile-view-toggle-btn" title="Tema">🎨</button>
+                <button onclick="showMobileSettings()" class="mobile-view-toggle-btn" title="Ayarlar">⚙️</button>
+                <button onclick="showMobileStats()" class="mobile-view-toggle-btn" title="İstatistikler">📊</button>
+            </div>
+            <h1>To-Do PRO Mobile</h1>
+            <p>Mobil Görev Yönetimi Sistemi</p>
+        </header>
+
+        <!-- Mobile Main Content -->
+        <main class="mobile-main-content">
+
+            <!-- Mobile Add Task -->
+            <section class="mobile-add-task-section">
+                <h3>📝 Yeni Görev Ekle</h3>
+                <div class="mobile-task-form-grid">
+                    <input type="text" id="mobile-task-input" class="mobile-task-input" placeholder="Görev metnini yazın..." onkeypress="handleMobileKeyPress(event)">
+                    <select id="mobile-priority-select" class="mobile-select-input">
+                        <option value="medium">🟡 Orta Öncelik</option>
+                        <option value="high">🔴 Yüksek Öncelik</option>
+                        <option value="low">🟢 Düşük Öncelik</option>
+                    </select>
+                    <select id="mobile-category-select" class="mobile-select-input">
+                        <option value="">📂 Kategori Seçin</option>
+                    </select>
+                    <input type="date" id="mobile-due-date-input" class="mobile-date-input">
+                    <button onclick="addMobileTask()" class="mobile-add-btn">➕ EKLE</button>
+                </div>
+
+                <div class="mobile-task-options">
+                    <label class="mobile-checkbox-container">
+                        <input type="checkbox" id="mobile-recurring-task" onchange="toggleMobileRecurringOptions()">
+                        <span>Tekrarlayan görev</span>
+                    </label>
+                    <div class="mobile-recurring-options" id="mobile-recurring-options" style="display: none;">
+                        <select id="mobile-recurring-type" class="mobile-recurring-select">
+                            <option value="daily">Günlük</option>
+                            <option value="weekly">Haftalık</option>
+                            <option value="monthly">Aylık</option>
+                        </select>
+                        <input type="number" id="mobile-recurring-count" class="mobile-recurring-input" placeholder="Tekrar sayısı" min="1" value="1">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Mobile Categories -->
+            <section class="mobile-categories-section">
+                <div class="mobile-categories-header">
+                    <h3>📂 Kategoriler</h3>
+                    <button onclick="showMobileAddCategoryDialog()" class="mobile-add-category-btn">➕</button>
+                </div>
+                <div class="mobile-categories-grid" id="mobile-categories-container">
+                    <!-- Mobile categories will be rendered here -->
+                </div>
+            </section>
+
+            <!-- Mobile Filters -->
+            <div class="mobile-filters">
+                <button onclick="setMobileFilter('all')" class="mobile-filter-btn active">Tümü</button>
+                <button onclick="setMobileFilter('pending')" class="mobile-filter-btn">Bekleyen</button>
+                <button onclick="setMobileFilter('completed')" class="mobile-filter-btn">Tamamlanan</button>
+                <button onclick="setMobileFilter('high')" class="mobile-filter-btn">🔴 Yüksek</button>
+                <button onclick="setMobileFilter('medium')" class="mobile-filter-btn">🟡 Orta</button>
+                <button onclick="setMobileFilter('low')" class="mobile-filter-btn">🟢 Düşük</button>
+                <button onclick="setMobileFilter('overdue')" class="mobile-filter-btn">⏰ Geciken</button>
+            </div>
+
+            <!-- Mobile Tasks -->
+            <section class="mobile-tasks-section">
+                <div class="mobile-tasks-header">
+                    <h3>📋 Görevler</h3>
+                    <div class="mobile-task-stats">
+                        <div class="mobile-stat" id="mobile-total-count">0</div>
+                        <div class="mobile-stat completed" id="mobile-completed-count">0</div>
+                        <div class="mobile-stat pending" id="mobile-pending-count">0</div>
+                    </div>
+                </div>
+                <div class="mobile-tasks-list" id="mobile-tasks-list">
+                    <!-- Mobile tasks will be rendered here -->
+                </div>
+            </section>
+
+            <!-- Mobile Achievements -->
+            <section class="mobile-achievements-section">
+                <h3>🏆 Başarımlar</h3>
+                <div class="mobile-achievements-grid" id="mobile-achievements-container">
+                    <!-- Mobile achievements will be rendered here -->
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Mobile FAB -->
+        <div class="mobile-fab-container">
+            <button class="mobile-fab" onclick="showMobileQuickActions()" title="Hızlı İşlemler">
+                <span>⚡</span>
+            </button>
+        </div>
+
+        <!-- Mobile Theme Switcher -->
+        <div class="mobile-theme-switcher" id="mobile-theme-switcher">
+            <div class="mobile-theme-header">
+                <h4>🎨 Tema Seçin</h4>
+                <button onclick="toggleMobileTheme()" class="mobile-theme-close">✕</button>
+            </div>
+            <div class="mobile-theme-grid">
+                <div class="mobile-theme-option mobile-theme-original active" onclick="setMobileTheme('original')" title="Orijinal">
+                    <div class="mobile-theme-preview" style="background: linear-gradient(135deg, #667eea, #764ba2);"></div>
+                    <span>Orijinal</span>
+                </div>
+                <div class="mobile-theme-option mobile-theme-ocean" onclick="setMobileTheme('ocean')" title="Okyanus">
+                    <div class="mobile-theme-preview" style="background: linear-gradient(135deg, #2196f3, #21cbf3);"></div>
+                    <span>Okyanus</span>
+                </div>
+                <div class="mobile-theme-option mobile-theme-forest" onclick="setMobileTheme('forest')" title="Orman">
+                    <div class="mobile-theme-preview" style="background: linear-gradient(135deg, #4caf50, #81c784);"></div>
+                    <span>Orman</span>
+                </div>
+                <div class="mobile-theme-option mobile-theme-sunset" onclick="setMobileTheme('sunset')" title="Gün Batımı">
+                    <div class="mobile-theme-preview" style="background: linear-gradient(135deg, #ff9800, #ffb74d);"></div>
+                    <span>Gün Batımı</span>
+                </div>
+                <div class="mobile-theme-option mobile-theme-rose" onclick="setMobileTheme('rose')" title="Gül">
+                    <div class="mobile-theme-preview" style="background: linear-gradient(135deg, #e91e63, #f06292);"></div>
+                    <span>Gül</span>
+                </div>
+                <div class="mobile-theme-option mobile-theme-purple" onclick="setMobileTheme('purple')" title="Mor">
+                    <div class="mobile-theme-preview" style="background: linear-gradient(135deg, #9c27b0, #ba68c8);"></div>
+                    <span>Mor</span>
+                </div>
+                <div class="mobile-theme-option mobile-theme-midnight" onclick="setMobileTheme('midnight')" title="Gece Yarısı">
+                    <div class="mobile-theme-preview" style="background: linear-gradient(135deg, #263238, #37474f);"></div>
+                    <span>Gece Yarısı</span>
+                </div>
+                <div class="mobile-theme-option mobile-theme-cyber" onclick="setMobileTheme('cyber')" title="Siber">
+                    <div class="mobile-theme-preview" style="background: linear-gradient(135deg, #00bcd4, #00e5ff);"></div>
+                    <span>Siber</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile AI Assistant -->
+        <div class="mobile-ai-assistant">
+            <button onclick="toggleMobileAI()" class="mobile-ai-toggle" id="mobile-ai-toggle-btn">
+                🤖 AI
+            </button>
+            <div class="mobile-ai-chat" id="mobile-ai-chat">
+                <div class="mobile-ai-chat-header">
+                    <h3>AI Görev Asistanı</h3>
+                    <button onclick="toggleMobileAI()" class="mobile-ai-chat-close">✕</button>
+                </div>
+                <div class="mobile-ai-chat-messages" id="mobile-ai-chat-messages">
+                    <div class="mobile-ai-message mobile-ai-welcome">
+                        <div class="mobile-ai-message-avatar">🤖</div>
+                        <div class="mobile-ai-message-content">
+                            <div class="mobile-ai-message-text">Merhaba! Mobil görev yönetim asistanınızım. Size nasıl yardımcı olabilirim?</div>
+                            <div class="mobile-ai-message-time">Şimdi</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mobile-ai-chat-input-area">
+                    <input type="text" id="mobile-ai-input" class="mobile-ai-input" placeholder="Sorunuzu yazın..." onkeypress="handleMobileAIKeyPress(event)">
+                    <button onclick="sendMobileAIMessage()" class="mobile-ai-send-btn">📤</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Help Button -->
+        <button onclick="showMobileHelp()" class="mobile-help-btn">❓</button>
+
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="assets/js/mobile-app.js"></script>
+</body>
+</html>
