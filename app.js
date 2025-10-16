@@ -493,6 +493,12 @@ function init() {
     dom.categoryModal.addEventListener("click", event => {
         if (event.target === dom.categoryModal) cancelNewCategory();
     });
+    dom.categoryManager = document.getElementById("categoryManager");
+    dom.newCategoryInput = document.getElementById("newCategoryInput");
+    dom.addCategoryFromSettings = document.getElementById("addCategoryFromSettings");
+    dom.categoryModal = document.getElementById("categoryModal");
+    dom.newCategoryModalInput = document.getElementById("newCategoryModalInput");
+    dom.cancelCategory = document.getElementById("cancelCategory");
     setupDragAndDrop();
     setInterval(checkReminders, 60000);
 }
