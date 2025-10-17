@@ -301,15 +301,15 @@ class TodoMobile {
             }
         });
 
-        // Görev butonları için event delegation
-        document.addEventListener('click', (e) => {
+        // Görev butonları için event delegation (mobil uyumlu)
+        const handleTaskAction = (e) => {
             // Silme butonu
             if (e.target.classList.contains('delete-btn') || e.target.closest('.delete-btn')) {
                 e.preventDefault();
                 e.stopPropagation();
                 const deleteBtn = e.target.classList.contains('delete-btn') ? e.target : e.target.closest('.delete-btn');
                 const taskId = deleteBtn.dataset.taskId;
-                console.log('Silme butonu tıklandı, taskId:', taskId);
+                console.log('Silme butonu tıklandı (mobil), taskId:', taskId);
                 this.deleteTask(taskId);
             }
             // Düzenleme butonu
@@ -318,10 +318,14 @@ class TodoMobile {
                 e.stopPropagation();
                 const editBtn = e.target.classList.contains('edit-btn') ? e.target : e.target.closest('.edit-btn');
                 const taskId = editBtn.dataset.taskId;
-                console.log('Düzenleme butonu tıklandı, taskId:', taskId);
+                console.log('Düzenleme butonu tıklandı (mobil), taskId:', taskId);
                 this.editTask(taskId);
             }
-        });
+        };
+
+        // Hem click hem touchend event'lerini dinle (mobil uyumluluk)
+        document.addEventListener('click', handleTaskAction);
+        document.addEventListener('touchend', handleTaskAction);
     }
 
     // Hızlı görev ekleme

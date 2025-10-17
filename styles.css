@@ -129,8 +129,10 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* Helper Bot Butonu */
@@ -424,11 +426,18 @@ body {
     border: none;
     color: var(--text-secondary);
     font-size: 0.875rem;
-    padding: 0.25rem;
+    padding: 0.5rem;
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all var(--transition-fast);
     margin-left: 0.25rem;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .task-action-btn:hover {
@@ -995,11 +1004,18 @@ body {
     border: none;
     color: var(--text-secondary);
     font-size: 0.875rem;
-    padding: 0.25rem;
+    padding: 0.5rem;
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all var(--transition-fast);
     margin-left: 0.25rem;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .task-action-btn:hover {
@@ -2145,5 +2161,17 @@ body.dark-theme .stat-card {
     
     .calendar-day {
         min-height: 60px;
+    }
+    
+    /* Mobil dokunma optimizasyonu */
+    .task-action-btn {
+        min-width: 48px;
+        min-height: 48px;
+        padding: 0.75rem;
+        font-size: 1rem;
+    }
+    
+    .task-actions {
+        opacity: 1; /* Mobilde her zaman görünür */
     }
 }
