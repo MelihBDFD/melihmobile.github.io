@@ -301,6 +301,11 @@ function createTaskElement(task, isArchive = false) {
     element.dataset.id = task.id;
     element.draggable = !isArchive;
 
+    // Görünürlük garantisi
+    element.style.opacity = '1';
+    element.style.visibility = 'visible';
+    element.style.display = 'flex';
+
     const title = element.querySelector('.task-title');
     const meta = element.querySelector('.task-meta');
     const description = element.querySelector('.task-description');
@@ -475,13 +480,24 @@ const dom = {
 
 function renderTaskList(container, tasks, isArchive = false) {
     container.innerHTML = "";
+    container.style.display = 'grid';
+    container.style.gap = '14px';
+
     if (!tasks.length) {
         container.classList.add("empty");
+        container.style.display = 'flex';
+        container.style.alignItems = 'center';
+        container.style.justifyContent = 'center';
         return;
     }
     container.classList.remove("empty");
-    tasks.forEach(task => {
+    container.style.display = 'grid';
+
+    tasks.forEach((task, index) => {
         const element = createTaskElement(task, isArchive);
+        element.style.opacity = '1';
+        element.style.visibility = 'visible';
+        element.style.display = 'flex';
         container.appendChild(element);
     });
 }

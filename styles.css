@@ -401,6 +401,8 @@ textarea:focus {
     background: rgba(148, 163, 184, 0.12);
     border: 1px solid rgba(148, 163, 184, 0.2);
     transition: transform var(--transition), box-shadow var(--transition), border var(--transition);
+    opacity: 1;
+    visibility: visible;
 }
 
 .task.dragging {
@@ -597,6 +599,11 @@ textarea:focus {
 
     .task {
         padding: 16px;
+        opacity: 1;
+        visibility: visible;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
     }
 
     .task-header {
