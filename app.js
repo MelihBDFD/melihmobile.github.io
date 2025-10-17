@@ -22,10 +22,95 @@ const defaultState = {
     formMode: "create",
     editingId: null,
     subtasksBuffer: [],
-    checklistBuffer: []
+    checklistBuffer: [],
+    auth: {
+        isAuthenticated: false,
+        currentUser: null,
+        users: {} // şifre hash'leri ile kullanıcı bilgileri
+    }
 };
 
-let state = { ...defaultState };
+function showLoginScreen() {
+    dom.appContent.style.display = 'none';
+    dom.loginScreen.style.display = 'flex';
+}
+
+function hideLoginScreen() {
+    dom.loginScreen.style.display = 'none';
+    dom.appContent.style.display = 'block';
+}
+
+function hashPassword(password) {
+    // Basit bir hash fonksiyonu - production'da daha güvenli bir yöntem kullanılmalı
+    let hash = 0;
+    for (let i = 0; i < password.length; i++) {
+        const char = password.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // 32-bit'e dönüştür
+    }
+    return hash.toString();
+}
+
+function registerUser(username, password) {
+    const hashedPassword = hashPassword(password);
+    state.auth.users[username] = {
+        password: hashedPassword,
+        createdAt: new Date().toISOString()
+    };
+    state.auth.currentUser = username;
+    state.auth.isAuthenticated = true;
+    saveState();
+    hideLoginScreen();
+    init();
+}
+
+function loginUser(username, password) {
+    const user = state.auth.users[username];
+    if (user && user.password === hashPassword(password)) {
+        state.auth.currentUser = username;
+        state.auth.isAuthenticated = true;
+        saveState();
+        hideLoginScreen();
+        init();
+        return true;
+    }
+    return false;
+}
+
+function handleLogin(event) {
+    event.preventDefault();
+    const username = dom.usernameInput.value.trim();
+    const password = dom.passwordInput.value;
+    if (loginUser(username, password)) {
+        dom.usernameInput.value = "";
+        dom.passwordInput.value = "";
+    } else {
+        alert("Geçersiz kullanıcı adı veya şifre!");
+    }
+}
+
+function handleRegister(event) {
+    event.preventDefault();
+    const username = dom.registerUsernameInput.value.trim();
+    const password = dom.registerPasswordInput.value;
+    if (username && password) {
+        registerUser(username, password);
+        dom.registerUsernameInput.value = "";
+        dom.registerPasswordInput.value = "";
+    } else {
+        alert("Kullanıcı adı ve şifre gerekli!");
+    }
+}
+
+function showRegisterForm() {
+    dom.loginForm.style.display = "none";
+    dom.registerForm.style.display = "block";
+}
+
+function showLoginForm() {
+    dom.registerForm.style.display = "none";
+    dom.loginForm.style.display = "block";
+}
 
 function loadState() {
     const data = localStorage.getItem("mobil-todo-data");
@@ -35,6 +120,7 @@ function loadState() {
         state.archive = parsed.archive || [];
         state.categories = parsed.categories || ["Genel"];
         state.settings = { ...defaultState.settings, ...parsed.settings };
+        state.auth = { ...defaultState.auth, ...parsed.auth };
     }
 }
 
@@ -43,7 +129,8 @@ function saveState() {
         tasks: state.tasks,
         archive: state.archive,
         categories: state.categories,
-        settings: state.settings
+        settings: state.settings,
+        auth: state.auth
     }));
 }
 
@@ -367,13 +454,15 @@ function createTaskElement(task, isArchive = false) {
         };
     } else {
         if (task.completedAt) {
-            completeBtn.textContent = 'Geri Al';
+            completeBtn.textContent = '↩️ Geri Al';
         } else {
-            completeBtn.textContent = 'Tamamlandı';
+            completeBtn.textContent = '✅ Tamamlandı';
         }
         completeBtn.onclick = () => toggleComplete(task.id);
         archiveBtn.onclick = () => archiveTask(task.id);
+        editBtn.textContent = '✏️';
         editBtn.onclick = () => editTask(task.id);
+        deleteBtn.textContent = '🗑️';
         deleteBtn.onclick = () => {
             if (confirm('Bu görevi silmek istediğinizden emin misiniz?')) {
                 deleteTask(task.id);
@@ -397,6 +486,18 @@ function createTaskElement(task, isArchive = false) {
 const dom = {
     body: document.body,
     loadingScreen: document.getElementById("loadingScreen"),
+    loginScreen: document.getElementById("loginScreen"),
+    appContent: document.getElementById("appContent"),
+    loginForm: document.getElementById("loginForm"),
+    registerForm: document.getElementById("registerForm"),
+    usernameInput: document.getElementById("usernameInput"),
+    passwordInput: document.getElementById("passwordInput"),
+    registerUsernameInput: document.getElementById("registerUsernameInput"),
+    registerPasswordInput: document.getElementById("registerPasswordInput"),
+    showRegisterBtn: document.getElementById("showRegisterBtn"),
+    showLoginBtn: document.getElementById("showLoginBtn"),
+    loginBtn: document.getElementById("loginBtn"),
+    registerBtn: document.getElementById("registerBtn"),
     form: document.getElementById("taskForm"),
     title: document.getElementById("taskTitle"),
     description: document.getElementById("taskDescription"),
@@ -851,6 +952,24 @@ function handleAddCategoryFromSettings() {
 }
 
 function init() {
+    // Auth kontrolü
+    if (state.auth.isAuthenticated) {
+        hideLoginScreen();
+        continueInit();
+    } else {
+        showLoginScreen();
+        setupAuthListeners();
+    }
+}
+
+function setupAuthListeners() {
+    dom.loginForm.addEventListener("submit", handleLogin);
+    dom.registerForm.addEventListener("submit", handleRegister);
+    dom.showRegisterBtn.addEventListener("click", showRegisterForm);
+    dom.showLoginBtn.addEventListener("click", showLoginForm);
+}
+
+function continueInit() {
     loadState();
     applyTheme();
     populateCategories();
@@ -891,6 +1010,7 @@ function init() {
     dom.exportData.addEventListener("click", exportData);
     dom.importData.addEventListener("change", importData);
     dom.addCategoryFromSettings.addEventListener("click", handleAddCategoryFromSettings);
+    dom.addCategoryBtn.addEventListener("click", handleAddCategory);
     dom.saveCategory.addEventListener("click", saveNewCategory);
     dom.cancelCategory.addEventListener("click", cancelNewCategory);
     dom.newCategoryModalInput.addEventListener("keypress", event => {
