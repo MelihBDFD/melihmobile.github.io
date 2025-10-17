@@ -3,1364 +3,257 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobil Yapılacaklar</title>
+    <title>To-Do PRO</title>
     <meta name="theme-color" content="#2563eb">
     <meta name="description" content="Mobil dostu yapılacaklar listesi uygulaması">
-    <link rel="manifest" href="data:application/json,{%22name%22:%22Mobil%20Yap%C4%B1lacaklar%22,%22short_name%22:%22Yap%C4%B1lacaklar%22,%22start_url%22:%22/%22,%22display%22:%22standalone%22,%22background_color%22:%22#f8fafc%22,%22theme_color%22:%22#2563eb%22,%22icons%22:[{%22src%22:%22data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3e%3cpath fill='%232563eb' d='M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z'/%3e%3c/svg%3e%22,%22sizes%22:%22192x192%22,%22type%22:%22image/svg+xml%22}]}">
-    <style>
-        :root {
-            --color-bg: #f8fafc;
-            --color-surface: #ffffff;
-            --color-surface-alt: #e2e8f0;
-            --color-border: #cbd5f5;
-            --color-text: #0f172a;
-            --color-muted: #475569;
-            --color-primary: #2563eb;
-            --color-primary-dark: #1d4ed8;
-            --color-success: #16a34a;
-            --color-danger: #dc2626;
-            --color-warning: #d97706;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --gap: 16px;
-            --transition: 200ms ease;
-            --font-size-xs: 12px;
-            --font-size-sm: 14px;
-            --font-size-base: 16px;
-            --font-size-lg: 18px;
-            --font-size-xl: 20px;
-            --font-size-2xl: 24px;
-        }
-
-        [data-theme="dark"] {
-            --color-bg: #0b1220;
-            --color-surface: #111827;
-            --color-surface-alt: #1f2937;
-            --color-border: #1e293b;
-            --color-text: #e2e8f0;
-            --color-muted: #94a3b8;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--color-bg);
-            color: var(--color-text);
-            line-height: 1.5;
-            padding: 16px;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 480px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 24px;
-        }
-
-        .header h1 {
-            font-size: var(--font-size-2xl);
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .header p {
-            color: var(--color-muted);
-            font-size: var(--font-size-sm);
-        }
-
-        .actions {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 12px 16px;
-            border: none;
-            border-radius: var(--radius-md);
-            background: var(--color-surface-alt);
-            color: var(--color-text);
-            font-size: var(--font-size-base);
-            cursor: pointer;
-            transition: all var(--transition);
-            min-height: 44px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            flex: 1;
-            min-width: 0;
-        }
-
-        .btn:hover {
-            background: var(--color-border);
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn.primary {
-            background: var(--color-primary);
-            color: white;
-        }
-
-        .btn.primary:hover {
-            background: var(--color-primary-dark);
-        }
-
-        .btn.success {
-            background: var(--color-success);
-            color: white;
-        }
-
-        .btn.danger {
-            background: var(--color-danger);
-            color: white;
-        }
-
-        .card {
-            background: var(--color-surface);
-            border-radius: var(--radius-lg);
-            padding: 20px;
-            margin-bottom: var(--gap);
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--color-border);
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 6px;
-            font-size: var(--font-size-sm);
-        }
-
-        .input, .select, .textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid var(--color-border);
-            border-radius: var(--radius-md);
-            font-size: var(--font-size-base);
-            background: var(--color-surface);
-            color: var(--color-text);
-            transition: border-color var(--transition);
-            min-height: 44px;
-        }
-
-        .input:focus, .select:focus, .textarea:focus {
-            outline: none;
-            border-color: var(--color-primary);
-        }
-
-        .textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .task-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 16px;
-            background: var(--color-surface-alt);
-            border-radius: var(--radius-md);
-            margin-bottom: 8px;
-            border: 2px solid transparent;
-            transition: all var(--transition);
-        }
-
-        .task-item.completed {
-            background: rgba(22, 163, 74, 0.1);
-            border-color: var(--color-success);
-        }
-
-        .task-item.overdue {
-            border-color: var(--color-danger);
-        }
-
-        .task-checkbox {
-            width: 24px;
-            height: 24px;
-            margin-top: 2px;
-            flex-shrink: 0;
-        }
-
-        .task-content {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .task-title {
-            font-weight: 600;
-            margin-bottom: 4px;
-            word-break: break-word;
-        }
-
-        .task-meta {
-            font-size: var(--font-size-xs);
-            color: var(--color-muted);
-            margin-bottom: 8px;
-        }
-
-        .task-actions {
-            display: flex;
-            gap: 4px;
-            flex-shrink: 0;
-        }
-
-        .task-actions .btn {
-            padding: 8px;
-            min-width: 32px;
-            font-size: var(--font-size-sm);
-        }
-
-        .filters {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-        }
-
-        .filters .select {
-            flex: 1;
-            min-width: 120px;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .stat {
-            text-align: center;
-            padding: 12px;
-            background: var(--color-surface-alt);
-            border-radius: var(--radius-md);
-        }
-
-        .stat-value {
-            font-size: var(--font-size-xl);
-            font-weight: 700;
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .stat-label {
-            font-size: var(--font-size-sm);
-            color: var(--color-muted);
-        }
-
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 16px;
-        }
-
-        .modal.show {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--color-surface);
-            border-radius: var(--radius-lg);
-            padding: 24px;
-            width: 100%;
-            max-width: 400px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            margin-bottom: 16px;
-        }
-
-        .modal-title {
-            font-size: var(--font-size-lg);
-            font-weight: 600;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-            margin-top: 20px;
-        }
-
-        .tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 10px;
-            background: var(--color-surface-alt);
-            border-radius: var(--radius-sm);
-            font-size: var(--font-size-sm);
-            margin: 2px;
-        }
-
-        .tag .btn {
-            padding: 2px 6px;
-            background: transparent;
-            color: inherit;
-            font-size: var(--font-size-xs);
-            min-width: auto;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--color-muted);
-        }
-
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 12px;
-            }
-
-            .actions {
-                flex-direction: column;
-            }
-
-            .actions .btn {
-                width: 100%;
-            }
-
-            .filters {
-                flex-direction: column;
-            }
-
-            .filters .select {
-                width: 100%;
-            }
-
-            .task-actions {
-                flex-direction: column;
-                gap: 2px;
-            }
-
-            .task-actions .btn {
-                width: 100%;
-                min-width: auto;
-            }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-            }
-        }
-    </style>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1>Mobil Yapılacaklar</h1>
-            <p>Günlük planlama ve hatırlatıcılar</p>
-        </header>
-
-        <div class="actions">
-            <button class="btn" id="themeToggle">🌙 Tema</button>
-            <button class="btn" id="exportBtn">📤 Dışa Aktar</button>
-            <button class="btn" id="importBtn">📥 İçe Aktar</button>
-            <input type="file" id="importFile" accept="application/json" style="display: none;">
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>To-Do PRO</h2>
+            <p>Yükleniyor...</p>
         </div>
+    </div>
 
-        <div class="card">
+    <header class="app-header">
+        <div class="brand">
+            <h1>To-Do PRO</h1>
+            <p>Profesyonel görev yönetimi ve analiz</p>
+        </div>
+        <div class="header-actions">
+            <button id="themeToggle" aria-label="Tema değiştir">Tema</button>
+            <button id="notificationToggle" aria-label="Bildirimleri aktifleştir">Bildirim</button>
+            <button id="exportData" aria-label="Görevleri dışa aktar">Dışa aktar</button>
+            <label class="import-label" for="importData">İçe aktar</label>
+            <input type="file" id="importData" accept="application/json">
+        </div>
+    </header>
+
+    <main class="layout">
+        <section class="panel" id="taskFormPanel">
             <h2>Yeni Görev</h2>
             <form id="taskForm">
-                <div class="form-group">
-                    <label for="taskTitle">Başlık *</label>
-                    <input type="text" id="taskTitle" class="input" required>
+                <div class="field">
+                    <label for="taskTitle">Başlık</label>
+                    <input id="taskTitle" name="title" type="text" required>
                 </div>
-
-                <div class="form-group">
+                <div class="field">
                     <label for="taskDescription">Açıklama</label>
-                    <textarea id="taskDescription" class="textarea"></textarea>
+                    <textarea id="taskDescription" name="description" rows="3"></textarea>
                 </div>
-
-                <div class="form-group">
-                    <label for="taskCategory">Kategori</label>
-                    <div style="display: flex; gap: 8px;">
-                        <select id="taskCategory" class="select"></select>
-                        <button type="button" class="btn" id="addCategoryBtn">+</button>
+                <div class="field-grid">
+                    <div class="field">
+                        <label for="taskCategory">Kategori</label>
+                        <div class="inline-field">
+                            <select id="taskCategory" name="category"></select>
+                            <button type="button" id="addCategory" data-tooltip="Yeni kategori ekle">+</button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="taskPriority">Öncelik</label>
+                        <select id="taskPriority" name="priority">
+                            <option value="low">Düşük</option>
+                            <option value="medium" selected>Orta</option>
+                            <option value="high">Yüksek</option>
+                            <option value="critical">Kritik</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="taskDueDate">Son Tarih</label>
+                        <input id="taskDueDate" name="dueDate" type="datetime-local">
                     </div>
                 </div>
+                <div class="field">
+                    <label>Alt Görevler</label>
+                    <div id="subtaskList" class="tags"></div>
+                    <div class="inline-field">
+                        <input id="subtaskInput" type="text" placeholder="Alt görev ekle">
+                        <button type="button" id="addSubtask">Ekle</button>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Kontrol Listesi</label>
+                    <div id="checklistItems" class="checklist"></div>
+                    <div class="inline-field">
+                        <input id="checklistInput" type="text" placeholder="Öğe ekle">
+                        <button type="button" id="addChecklist">Ekle</button>
+                    </div>
+                </div>
+                <button type="submit" id="saveTask">Görevi Kaydet</button>
+            </form>
+        </section>
 
-                <div class="form-group">
-                    <label for="taskPriority">Öncelik</label>
-                    <select id="taskPriority" class="select">
+        <section class="panel" id="filtersPanel">
+            <h2>Filtreler ve Sıralama</h2>
+            <div class="filters">
+                <div class="field">
+                    <label for="searchInput">Ara</label>
+                    <input id="searchInput" type="search" placeholder="Başlık veya açıklama">
+                </div>
+                <div class="field">
+                    <label for="filterCategory">Kategori</label>
+                    <select id="filterCategory"></select>
+                </div>
+                <div class="field">
+                    <label for="filterPriority">Öncelik</label>
+                    <select id="filterPriority">
+                        <option value="all">Tümü</option>
                         <option value="low">Düşük</option>
-                        <option value="medium" selected>Orta</option>
+                        <option value="medium">Orta</option>
                         <option value="high">Yüksek</option>
                         <option value="critical">Kritik</option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label for="taskDueDate">Son Tarih</label>
-                    <input type="datetime-local" id="taskDueDate" class="input">
-                </div>
-
-                <div class="form-group">
-                    <label>Alt Görevler</label>
-                    <div id="subtaskList" style="margin-bottom: 8px;"></div>
-                    <div style="display: flex; gap: 8px;">
-                        <input type="text" id="subtaskInput" class="input" placeholder="Alt görev ekle">
-                        <button type="button" class="btn" id="addSubtaskBtn">Ekle</button>
+                <div class="field-grid">
+                    <div class="field">
+                        <label for="filterStartDate">Başlangıç</label>
+                        <input id="filterStartDate" type="date">
+                    </div>
+                    <div class="field">
+                        <label for="filterEndDate">Bitiş</label>
+                        <input id="filterEndDate" type="date">
                     </div>
                 </div>
-
-                <div class="form-group">
-                    <label>Kontrol Listesi</label>
-                    <div id="checklistContainer" style="margin-bottom: 8px;"></div>
-                    <div style="display: flex; gap: 8px;">
-                        <input type="text" id="checklistInput" class="input" placeholder="Öğe ekle">
-                        <button type="button" class="btn" id="addChecklistBtn">Ekle</button>
-                    </div>
+                <div class="field">
+                    <label for="sortSelect">Sırala</label>
+                    <select id="sortSelect">
+                        <option value="createdAtNewest">Yeni eklenen</option>
+                        <option value="createdAtOldest">Eski eklenen</option>
+                        <option value="dueDate">Son tarihe göre</option>
+                        <option value="priority">Önceliğe göre</option>
+                    </select>
                 </div>
-
-                <button type="submit" class="btn primary" style="width: 100%;">Görevi Kaydet</button>
-            </form>
-        </div>
-
-        <div class="card">
-            <h2>İstatistikler</h2>
-            <div class="stats">
-                <div class="stat">
-                    <span class="stat-value" id="statTotal">0</span>
-                    <span class="stat-label">Toplam</span>
+                <div class="field view-toggle">
+                    <span>Görünüm</span>
+                    <button type="button" id="listViewBtn" class="active">Liste</button>
+                    <button type="button" id="cardViewBtn">Kart</button>
                 </div>
-                <div class="stat">
-                    <span class="stat-value" id="statCompleted">0</span>
-                    <span class="stat-label">Tamamlanan</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-value" id="statActive">0</span>
-                    <span class="stat-label">Aktif</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-value" id="statOverdue">0</span>
-                    <span class="stat-label">Geciken</span>
+                <div class="field">
+                    <button type="button" id="resetFilters">Filtreleri Temizle</button>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <section class="panel" id="analyticsPanel">
+            <h2>Analitik</h2>
+            <div class="analytics-grid">
+                <div class="stat">
+                    <span>Toplam Görev</span>
+                    <strong id="statTotal">0</strong>
+                </div>
+                <div class="stat">
+                    <span>Tamamlanan</span>
+                    <strong id="statCompleted">0</strong>
+                </div>
+                <div class="stat">
+                    <span>Aktif</span>
+                    <strong id="statActive">0</strong>
+                </div>
+                <div class="stat">
+                    <span>Geciken</span>
+                    <strong id="statOverdue">0</strong>
+                </div>
+            </div>
+            <div class="chart" id="categoryChart"></div>
+            <div class="timeline" id="dailySummary"></div>
+        </section>
+
+        <section class="panel wide" id="tasksPanel">
+            <div class="panel-header">
                 <h2>Görevler</h2>
-                <div style="display: flex; gap: 4px;">
-                    <button class="btn" id="selectAllBtn">Tümünü Seç</button>
-                    <button class="btn danger" id="bulkDeleteBtn" style="display: none;">Sil</button>
-                    <button class="btn success" id="bulkCompleteBtn" style="display: none;">Tamamla</button>
+                <div class="bulk-actions">
+                    <button id="selectAll">Tümünü Seç</button>
+                    <button id="clearSelection">Seçimi Temizle</button>
+                    <button id="bulkComplete">Seçileni Tamamla</button>
+                    <button id="bulkDelete">Seçileni Sil</button>
+                    <button id="bulkArchive">Seçileni Arşivle</button>
                 </div>
             </div>
+            <div id="taskContainer" class="task-container" data-view="list"></div>
+        </section>
 
-            <div class="filters">
-                <input type="search" id="searchInput" class="input" placeholder="Ara...">
-                <select id="filterCategory" class="select"></select>
-                <select id="filterPriority" class="select">
-                    <option value="all">Tüm Öncelikler</option>
-                    <option value="low">Düşük</option>
-                    <option value="medium">Orta</option>
-                    <option value="high">Yüksek</option>
-                    <option value="critical">Kritik</option>
-                </select>
-                <button class="btn" id="resetFiltersBtn">Temizle</button>
-            </div>
-
-            <div id="taskList"></div>
-        </div>
-
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+        <section class="panel" id="archivePanel">
+            <div class="panel-header">
                 <h2>Arşiv</h2>
-                <button class="btn danger" id="clearArchiveBtn">Temizle</button>
+                <button id="clearArchive">Arşivi Temizle</button>
             </div>
-            <div id="archiveList"></div>
-        </div>
+            <div id="archiveContainer" class="task-container" data-view="list"></div>
+        </section>
 
-        <div class="card">
+        <section class="panel" id="settingsPanel">
             <h2>Ayarlar</h2>
-            <div class="form-group">
-                <label for="defaultSort">Varsayılan Sıralama</label>
-                <select id="defaultSort" class="select">
-                    <option value="createdAtNewest">Yeni eklenen</option>
-                    <option value="createdAtOldest">Eski eklenen</option>
-                    <option value="dueDate">Son tarihe göre</option>
-                    <option value="priority">Önceliğe göre</option>
-                </select>
-            </div>
+            <form id="settingsForm">
+                <div class="field">
+                    <label for="defaultSort">Varsayılan sıralama</label>
+                    <select id="defaultSort" name="defaultSort">
+                        <option value="createdAtNewest">Yeni eklenen</option>
+                        <option value="createdAtOldest">Eski eklenen</option>
+                        <option value="dueDate">Son tarihe göre</option>
+                        <option value="priority">Önceliğe göre</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="defaultView">Varsayılan görünüm</label>
+                    <select id="defaultView" name="defaultView">
+                        <option value="list">Liste</option>
+                        <option value="card">Kart</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="reminderLead">Hatırlatma süresi (dakika)</label>
+                    <input id="reminderLead" name="reminderLead" type="number" min="1" value="30">
+                </div>
+                <div class="field">
+                    <label>Kategoriler</label>
+                    <div id="categoryManager" class="tags"></div>
+                    <div class="inline-field">
+                        <input id="newCategoryInput" type="text" placeholder="Kategori adı">
+                        <button type="button" id="addCategoryFromSettings">Ekle</button>
+                    </div>
+                </div>
+                <button type="submit">Kaydet</button>
+            </form>
+        </section>
+    </main>
 
-            <div class="form-group">
-                <label>Toplu İşlemler</label>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button class="btn" id="archiveAllCompletedBtn">Tamamlananları Arşivle</button>
-                    <button class="btn danger" id="deleteAllBtn">Tümünü Sil</button>
+    <template id="taskTemplate">
+        <article class="task" draggable="true">
+            <div class="task-header">
+                <div class="task-drag">☰</div>
+                <div class="task-main">
+                    <div class="task-title"></div>
+                    <div class="task-meta"></div>
+                </div>
+                <div class="task-controls">
+                    <input type="checkbox" class="task-select" aria-label="Görevi seç">
+                    <button class="complete-btn">Tamamlandı</button>
+                    <button class="archive-btn">Arşivle</button>
+                    <button class="edit-btn">Düzenle</button>
+                    <button class="delete-btn">Sil</button>
                 </div>
             </div>
-
-            <div class="form-group">
-                <label>Kategoriler</label>
-                <div id="categoryManager" style="margin-bottom: 8px;"></div>
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="newCategoryInput" class="input" placeholder="Kategori adı">
-                    <button type="button" class="btn" id="addCategoryFromSettingsBtn">Ekle</button>
-                </div>
+            <div class="task-body">
+                <p class="task-description"></p>
+                <div class="task-checklist"></div>
+                <div class="task-subtasks"></div>
             </div>
-        </div>
-    </div>
+        </article>
+    </template>
 
-    <!-- Modal for adding categories -->
-    <div class="modal" id="categoryModal">
+    <div id="categoryModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Yeni Kategori Ekle</h3>
-            </div>
-            <div class="form-group">
-                <input type="text" id="newCategoryModalInput" class="input" placeholder="Kategori adı" maxlength="50">
-            </div>
+            <h3>Yeni Kategori Ekle</h3>
+            <input id="newCategoryModalInput" type="text" placeholder="Kategori adı" maxlength="50">
             <div class="modal-actions">
-                <button class="btn" id="cancelCategoryBtn">İptal</button>
-                <button class="btn primary" id="saveCategoryBtn">Ekle</button>
+                <button id="cancelCategory">İptal</button>
+                <button id="saveCategory" class="primary">Ekle</button>
             </div>
         </div>
     </div>
-
-    <script>
-        // App state
-        const state = {
-            tasks: [],
-            archive: [],
-            categories: ['Genel'],
-            settings: {
-                theme: 'light',
-                defaultSort: 'createdAtNewest'
-            },
-            filters: {
-                search: '',
-                category: 'all',
-                priority: 'all'
-            },
-            sort: 'createdAtNewest',
-            selectedTasks: new Set()
-        };
-
-        // DOM elements
-        const elements = {
-            themeToggle: document.getElementById('themeToggle'),
-            exportBtn: document.getElementById('exportBtn'),
-            importBtn: document.getElementById('importBtn'),
-            importFile: document.getElementById('importFile'),
-            taskForm: document.getElementById('taskForm'),
-            taskTitle: document.getElementById('taskTitle'),
-            taskDescription: document.getElementById('taskDescription'),
-            taskCategory: document.getElementById('taskCategory'),
-            taskPriority: document.getElementById('taskPriority'),
-            taskDueDate: document.getElementById('taskDueDate'),
-            subtaskList: document.getElementById('subtaskList'),
-            subtaskInput: document.getElementById('subtaskInput'),
-            addSubtaskBtn: document.getElementById('addSubtaskBtn'),
-            checklistContainer: document.getElementById('checklistContainer'),
-            checklistInput: document.getElementById('checklistInput'),
-            addChecklistBtn: document.getElementById('addChecklistBtn'),
-            addCategoryBtn: document.getElementById('addCategoryBtn'),
-            statTotal: document.getElementById('statTotal'),
-            statCompleted: document.getElementById('statCompleted'),
-            statActive: document.getElementById('statActive'),
-            statOverdue: document.getElementById('statOverdue'),
-            searchInput: document.getElementById('searchInput'),
-            filterCategory: document.getElementById('filterCategory'),
-            filterPriority: document.getElementById('filterPriority'),
-            resetFiltersBtn: document.getElementById('resetFiltersBtn'),
-            selectAllBtn: document.getElementById('selectAllBtn'),
-            bulkDeleteBtn: document.getElementById('bulkDeleteBtn'),
-            bulkCompleteBtn: document.getElementById('bulkCompleteBtn'),
-            taskList: document.getElementById('taskList'),
-            archiveList: document.getElementById('archiveList'),
-            clearArchiveBtn: document.getElementById('clearArchiveBtn'),
-            defaultSort: document.getElementById('defaultSort'),
-            archiveAllCompletedBtn: document.getElementById('archiveAllCompletedBtn'),
-            deleteAllBtn: document.getElementById('deleteAllBtn'),
-            categoryManager: document.getElementById('categoryManager'),
-            newCategoryInput: document.getElementById('newCategoryInput'),
-            addCategoryFromSettingsBtn: document.getElementById('addCategoryFromSettingsBtn'),
-            categoryModal: document.getElementById('categoryModal'),
-            newCategoryModalInput: document.getElementById('newCategoryModalInput'),
-            cancelCategoryBtn: document.getElementById('cancelCategoryBtn'),
-            saveCategoryBtn: document.getElementById('saveCategoryBtn')
-        };
-
-        // Utility functions
-        function saveToStorage() {
-            localStorage.setItem('mobil-todo-data', JSON.stringify({
-                tasks: state.tasks,
-                archive: state.archive,
-                categories: state.categories,
-                settings: state.settings
-            }));
-        }
-
-        function loadFromStorage() {
-            const data = localStorage.getItem('mobil-todo-data');
-            if (data) {
-                const parsed = JSON.parse(data);
-                state.tasks = parsed.tasks || [];
-                state.archive = parsed.archive || [];
-                state.categories = parsed.categories || ['Genel'];
-                state.settings = { ...state.settings, ...parsed.settings };
-            }
-        }
-
-        function generateId() {
-            return Date.now().toString(36) + Math.random().toString(36).substr(2);
-        }
-
-        function formatDate(dateString) {
-            if (!dateString) return '';
-            const date = new Date(dateString);
-            return date.toLocaleString('tr-TR', {
-                dateStyle: 'medium',
-                timeStyle: 'short'
-            });
-        }
-
-        function formatRelative(dateString) {
-            if (!dateString) return '';
-            const date = new Date(dateString);
-            const now = new Date();
-            const diffMs = date - now;
-            const diffHours = Math.abs(diffMs) / (1000 * 60 * 60);
-
-            if (diffHours < 1) {
-                const diffMins = Math.abs(diffMs) / (1000 * 60);
-                return diffMs > 0 ? `${Math.round(diffMins)} dk sonra` : `${Math.round(diffMins)} dk önce`;
-            } else if (diffHours < 24) {
-                return diffMs > 0 ? `${Math.round(diffHours)} sa sonra` : `${Math.round(diffHours)} sa önce`;
-            } else {
-                const diffDays = diffHours / 24;
-                return diffMs > 0 ? `${Math.round(diffDays)} gün sonra` : `${Math.round(diffDays)} gün önce`;
-            }
-        }
-
-        function applyTheme() {
-            document.documentElement.setAttribute('data-theme', state.settings.theme);
-            elements.themeToggle.textContent = state.settings.theme === 'dark' ? '☀️ Tema' : '🌙 Tema';
-        }
-
-        function populateCategories() {
-            const selects = [elements.taskCategory, elements.filterCategory];
-            selects.forEach(select => {
-                select.innerHTML = '';
-                state.categories.forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat;
-                    option.textContent = cat;
-                    select.appendChild(option);
-                });
-            });
-
-            elements.categoryManager.innerHTML = '';
-            state.categories.forEach(cat => {
-                if (cat === 'Genel') return;
-                const tag = document.createElement('span');
-                tag.className = 'tag';
-                tag.textContent = cat;
-                const removeBtn = document.createElement('button');
-                removeBtn.className = 'btn';
-                removeBtn.textContent = '×';
-                removeBtn.onclick = () => removeCategory(cat);
-                tag.appendChild(removeBtn);
-                elements.categoryManager.appendChild(tag);
-            });
-        }
-
-        function removeCategory(category) {
-            if (category === 'Genel') return;
-            state.categories = state.categories.filter(c => c !== category);
-            state.tasks.forEach(task => {
-                if (task.category === category) task.category = 'Genel';
-            });
-            saveToStorage();
-            populateCategories();
-            render();
-        }
-
-        // Task management
-        function createTask(data) {
-            return {
-                id: generateId(),
-                title: data.title,
-                description: data.description || '',
-                category: data.category || 'Genel',
-                priority: data.priority || 'medium',
-                dueDate: data.dueDate || null,
-                subtasks: data.subtasks || [],
-                checklist: data.checklist || [],
-                completedAt: null,
-                createdAt: new Date().toISOString(),
-                order: Date.now()
-            };
-        }
-
-        function addTask(task) {
-            state.tasks.push(task);
-            saveToStorage();
-            render();
-            resetForm();
-        }
-
-        function updateTask(id, updates) {
-            const task = state.tasks.find(t => t.id === id);
-            if (task) {
-                Object.assign(task, updates);
-                saveToStorage();
-                render();
-            }
-        }
-
-        function deleteTask(id) {
-            state.tasks = state.tasks.filter(t => t.id !== id);
-            state.selectedTasks.delete(id);
-            saveToStorage();
-            render();
-        }
-
-        function toggleTaskComplete(id) {
-            const task = state.tasks.find(t => t.id === id);
-            if (task) {
-                task.completedAt = task.completedAt ? null : new Date().toISOString();
-                saveToStorage();
-                render();
-            }
-        }
-
-        function archiveTask(id) {
-            const index = state.tasks.findIndex(t => t.id === id);
-            if (index !== -1) {
-                const task = state.tasks.splice(index, 1)[0];
-                state.archive.push(task);
-                state.selectedTasks.delete(id);
-                saveToStorage();
-                render();
-            }
-        }
-
-        function editTask(id) {
-            const task = state.tasks.find(t => t.id === id);
-            if (!task) return;
-
-            elements.taskTitle.value = task.title;
-            elements.taskDescription.value = task.description;
-            elements.taskCategory.value = task.category;
-            elements.taskPriority.value = task.priority;
-            elements.taskDueDate.value = task.dueDate ? new Date(task.dueDate).toISOString().slice(0, -1) : '';
-
-            elements.subtaskList.innerHTML = '';
-            task.subtasks.forEach(sub => addSubtaskToForm(sub.text));
-
-            elements.checklistContainer.innerHTML = '';
-            task.checklist.forEach(item => addChecklistItemToForm(item.text, item.completed));
-
-            // Change form to edit mode
-            elements.taskForm.dataset.editId = id;
-            elements.taskForm.querySelector('button[type="submit"]').textContent = 'Güncelle';
-            elements.taskForm.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // Form handling
-        function resetForm() {
-            elements.taskForm.reset();
-            elements.taskForm.removeAttribute('data-edit-id');
-            elements.subtaskList.innerHTML = '';
-            elements.checklistContainer.innerHTML = '';
-            elements.taskForm.querySelector('button[type="submit"]').textContent = 'Görevi Kaydet';
-        }
-
-        function addSubtaskToForm(text) {
-            if (!text.trim()) return;
-            const tag = document.createElement('span');
-            tag.className = 'tag';
-            tag.textContent = text.trim();
-            const removeBtn = document.createElement('button');
-            removeBtn.className = 'btn';
-            removeBtn.textContent = '×';
-            removeBtn.onclick = () => tag.remove();
-            tag.appendChild(removeBtn);
-            elements.subtaskList.appendChild(tag);
-        }
-
-        function addChecklistItemToForm(text, completed = false) {
-            if (!text.trim()) return;
-            const item = document.createElement('div');
-            item.style.display = 'flex';
-            item.style.alignItems = 'center';
-            item.style.gap = '8px';
-            item.style.marginBottom = '4px';
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.checked = completed;
-            checkbox.style.width = '20px';
-            checkbox.style.height = '20px';
-
-            const span = document.createElement('span');
-            span.textContent = text.trim();
-            span.style.flex = '1';
-
-            const removeBtn = document.createElement('button');
-            removeBtn.className = 'btn';
-            removeBtn.textContent = '×';
-            removeBtn.onclick = () => item.remove();
-
-            item.appendChild(checkbox);
-            item.appendChild(span);
-            item.appendChild(removeBtn);
-            elements.checklistContainer.appendChild(item);
-        }
-
-        // Rendering
-        function renderTask(task, isArchive = false) {
-            const item = document.createElement('div');
-            item.className = 'task-item';
-            item.dataset.id = task.id;
-
-            if (task.completedAt) {
-                item.classList.add('completed');
-            }
-
-            if (task.dueDate && !task.completedAt && new Date(task.dueDate) < new Date()) {
-                item.classList.add('overdue');
-            }
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.className = 'task-checkbox';
-            checkbox.checked = !!task.completedAt;
-            checkbox.onchange = () => {
-                if (isArchive) return;
-                toggleTaskComplete(task.id);
-            };
-
-            const content = document.createElement('div');
-            content.className = 'task-content';
-
-            const title = document.createElement('div');
-            title.className = 'task-title';
-            title.textContent = task.title;
-
-            const meta = document.createElement('div');
-            meta.className = 'task-meta';
-            const metaParts = [task.category, `Öncelik: ${task.priority}`];
-            if (task.dueDate) {
-                metaParts.push(`Son: ${formatDate(task.dueDate)} (${formatRelative(task.dueDate)})`);
-            }
-            meta.textContent = metaParts.join(' • ');
-
-            content.appendChild(title);
-            content.appendChild(meta);
-
-            if (task.description) {
-                const desc = document.createElement('div');
-                desc.style.marginTop = '8px';
-                desc.style.fontSize = 'var(--font-size-sm)';
-                desc.textContent = task.description;
-                content.appendChild(desc);
-            }
-
-            if (task.subtasks.length > 0) {
-                const subtasks = document.createElement('div');
-                subtasks.style.marginTop = '8px';
-                task.subtasks.forEach(sub => {
-                    const subItem = document.createElement('div');
-                    subItem.style.display = 'flex';
-                    subItem.style.alignItems = 'center';
-                    subItem.style.gap = '4px';
-                    subItem.style.fontSize = 'var(--font-size-sm)';
-                    subItem.innerHTML = '• ' + sub.text;
-                    subtasks.appendChild(subItem);
-                });
-                content.appendChild(subtasks);
-            }
-
-            if (task.checklist.length > 0) {
-                const checklist = document.createElement('div');
-                checklist.style.marginTop = '8px';
-                task.checklist.forEach(check => {
-                    const checkItem = document.createElement('div');
-                    checkItem.style.display = 'flex';
-                    checkItem.style.alignItems = 'center';
-                    checkItem.style.gap = '4px';
-                    checkItem.style.fontSize = 'var(--font-size-sm)';
-                    checkItem.innerHTML = (check.completed ? '☑' : '☐') + ' ' + check.text;
-                    checklist.appendChild(checkItem);
-                });
-                content.appendChild(checklist);
-            }
-
-            const actions = document.createElement('div');
-            actions.className = 'task-actions';
-
-            if (!isArchive) {
-                const selectCheckbox = document.createElement('input');
-                selectCheckbox.type = 'checkbox';
-                selectCheckbox.style.width = '20px';
-                selectCheckbox.style.height = '20px';
-                selectCheckbox.checked = state.selectedTasks.has(task.id);
-                selectCheckbox.onchange = () => {
-                    if (selectCheckbox.checked) {
-                        state.selectedTasks.add(task.id);
-                    } else {
-                        state.selectedTasks.delete(task.id);
-                    }
-                    updateBulkActions();
-                };
-
-                const editBtn = document.createElement('button');
-                editBtn.className = 'btn';
-                editBtn.textContent = '✏️';
-                editBtn.onclick = () => editTask(task.id);
-
-                const archiveBtn = document.createElement('button');
-                archiveBtn.className = 'btn';
-                archiveBtn.textContent = '📁';
-                archiveBtn.onclick = () => archiveTask(task.id);
-
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'btn danger';
-                deleteBtn.textContent = '🗑️';
-                deleteBtn.onclick = () => {
-                    if (confirm('Bu görevi silmek istediğinizden emin misiniz?')) {
-                        deleteTask(task.id);
-                    }
-                };
-
-                actions.appendChild(selectCheckbox);
-                actions.appendChild(editBtn);
-                actions.appendChild(archiveBtn);
-                actions.appendChild(deleteBtn);
-            }
-
-            item.appendChild(checkbox);
-            item.appendChild(content);
-            item.appendChild(actions);
-
-            return item;
-        }
-
-        function renderTaskList() {
-            elements.taskList.innerHTML = '';
-
-            let filteredTasks = state.tasks.filter(task => {
-                if (state.filters.search) {
-                    const searchTerm = state.filters.search.toLowerCase();
-                    const matches = task.title.toLowerCase().includes(searchTerm) ||
-                                  (task.description && task.description.toLowerCase().includes(searchTerm));
-                    if (!matches) return false;
-                }
-
-                if (state.filters.category !== 'all' && task.category !== state.filters.category) {
-                    return false;
-                }
-
-                if (state.filters.priority !== 'all' && task.priority !== state.filters.priority) {
-                    return false;
-                }
-
-                return true;
-            });
-
-            // Sort tasks
-            filteredTasks.sort((a, b) => {
-                switch (state.sort) {
-                    case 'createdAtOldest':
-                        return new Date(a.createdAt) - new Date(b.createdAt);
-                    case 'dueDate':
-                        if (!a.dueDate && !b.dueDate) return 0;
-                        if (!a.dueDate) return 1;
-                        if (!b.dueDate) return -1;
-                        return new Date(a.dueDate) - new Date(b.dueDate);
-                    case 'priority':
-                        const priorities = { low: 1, medium: 2, high: 3, critical: 4 };
-                        return priorities[b.priority] - priorities[a.priority];
-                    default:
-                        return new Date(b.createdAt) - new Date(a.createdAt);
-                }
-            });
-
-            if (filteredTasks.length === 0) {
-                const empty = document.createElement('div');
-                empty.className = 'empty-state';
-                empty.innerHTML = `
-                    <div class="empty-state-icon">📝</div>
-                    <div>Henüz görev yok</div>
-                `;
-                elements.taskList.appendChild(empty);
-            } else {
-                filteredTasks.forEach(task => {
-                    elements.taskList.appendChild(renderTask(task));
-                });
-            }
-        }
-
-        function renderArchive() {
-            elements.archiveList.innerHTML = '';
-
-            if (state.archive.length === 0) {
-                const empty = document.createElement('div');
-                empty.className = 'empty-state';
-                empty.innerHTML = `
-                    <div class="empty-state-icon">📁</div>
-                    <div>Arşiv boş</div>
-                `;
-                elements.archiveList.appendChild(empty);
-            } else {
-                state.archive.forEach(task => {
-                    elements.archiveList.appendChild(renderTask(task, true));
-                });
-            }
-        }
-
-        function updateStats() {
-            const total = state.tasks.length;
-            const completed = state.tasks.filter(t => t.completedAt).length;
-            const active = total - completed;
-            const overdue = state.tasks.filter(t => t.dueDate && !t.completedAt && new Date(task.dueDate) < new Date()).length;
-
-            elements.statTotal.textContent = total;
-            elements.statCompleted.textContent = completed;
-            elements.statActive.textContent = active;
-            elements.statOverdue.textContent = overdue;
-        }
-
-        function updateBulkActions() {
-            const hasSelection = state.selectedTasks.size > 0;
-            elements.bulkDeleteBtn.style.display = hasSelection ? 'inline-flex' : 'none';
-            elements.bulkCompleteBtn.style.display = hasSelection ? 'inline-flex' : 'none';
-        }
-
-        function render() {
-            renderTaskList();
-            renderArchive();
-            updateStats();
-            updateBulkActions();
-        }
-
-        // Event listeners
-        function initEventListeners() {
-            // Theme toggle
-            elements.themeToggle.onclick = () => {
-                state.settings.theme = state.settings.theme === 'dark' ? 'light' : 'dark';
-                applyTheme();
-                saveToStorage();
-            };
-
-            // Export/Import
-            elements.exportBtn.onclick = () => {
-                const data = {
-                    tasks: state.tasks,
-                    archive: state.archive,
-                    categories: state.categories,
-                    settings: state.settings
-                };
-                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `mobil-yapılacaklar-${new Date().toISOString().slice(0, 10)}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
-            };
-
-            elements.importBtn.onclick = () => {
-                elements.importFile.click();
-            };
-
-            elements.importFile.onchange = (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const data = JSON.parse(e.target.result);
-                        state.tasks = data.tasks || [];
-                        state.archive = data.archive || [];
-                        state.categories = data.categories || ['Genel'];
-                        state.settings = { ...state.settings, ...data.settings };
-                        saveToStorage();
-                        applyTheme();
-                        populateCategories();
-                        render();
-                        alert('Veriler başarıyla içe aktarıldı!');
-                    } catch (error) {
-                        alert('Geçersiz dosya formatı!');
-                    }
-                };
-                reader.readAsText(file);
-            };
-
-            // Task form
-            elements.taskForm.onsubmit = (e) => {
-                e.preventDefault();
-
-                const formData = new FormData(elements.taskForm);
-                const taskData = {
-                    title: elements.taskTitle.value.trim(),
-                    description: elements.taskDescription.value.trim(),
-                    category: elements.taskCategory.value,
-                    priority: elements.taskPriority.value,
-                    dueDate: elements.taskDueDate.value || null,
-                    subtasks: Array.from(elements.subtaskList.querySelectorAll('.tag')).map(tag =>
-                        ({ text: tag.textContent.replace('×', '').trim(), completed: false })
-                    ),
-                    checklist: Array.from(elements.checklistContainer.children).map(item => ({
-                        text: item.querySelector('span').textContent.trim(),
-                        completed: item.querySelector('input[type="checkbox"]').checked
-                    }))
-                };
-
-                if (!taskData.title) return;
-
-                if (elements.taskForm.dataset.editId) {
-                    // Update existing task
-                    const id = elements.taskForm.dataset.editId;
-                    updateTask(id, {
-                        ...taskData,
-                        updatedAt: new Date().toISOString()
-                    });
-                } else {
-                    // Create new task
-                    const task = createTask(taskData);
-                    addTask(task);
-                }
-            };
-
-            // Subtasks
-            elements.addSubtaskBtn.onclick = () => {
-                const text = elements.subtaskInput.value.trim();
-                if (text) {
-                    addSubtaskToForm(text);
-                    elements.subtaskInput.value = '';
-                    elements.subtaskInput.focus();
-                }
-            };
-
-            elements.subtaskInput.onkeypress = (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    elements.addSubtaskBtn.click();
-                }
-            };
-
-            // Checklist
-            elements.addChecklistBtn.onclick = () => {
-                const text = elements.checklistInput.value.trim();
-                if (text) {
-                    addChecklistItemToForm(text);
-                    elements.checklistInput.value = '';
-                    elements.checklistInput.focus();
-                }
-            };
-
-            elements.checklistInput.onkeypress = (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    elements.addChecklistBtn.click();
-                }
-            };
-
-            // Category modal
-            elements.addCategoryBtn.onclick = () => {
-                elements.categoryModal.classList.add('show');
-                elements.newCategoryModalInput.focus();
-            };
-
-            elements.saveCategoryBtn.onclick = () => {
-                const name = elements.newCategoryModalInput.value.trim();
-                if (name && !state.categories.includes(name)) {
-                    state.categories.push(name);
-                    saveToStorage();
-                    populateCategories();
-                    elements.taskCategory.value = name;
-                }
-                elements.categoryModal.classList.remove('show');
-                elements.newCategoryModalInput.value = '';
-            };
-
-            elements.cancelCategoryBtn.onclick = () => {
-                elements.categoryModal.classList.remove('show');
-                elements.newCategoryModalInput.value = '';
-            };
-
-            elements.newCategoryModalInput.onkeypress = (e) => {
-                if (e.key === 'Enter') {
-                    elements.saveCategoryBtn.click();
-                }
-            };
-
-            elements.categoryModal.onclick = (e) => {
-                if (e.target === elements.categoryModal) {
-                    elements.cancelCategoryBtn.click();
-                }
-            };
-
-            // Filters
-            elements.searchInput.oninput = () => {
-                state.filters.search = elements.searchInput.value;
-                render();
-            };
-
-            elements.filterCategory.onchange = () => {
-                state.filters.category = elements.filterCategory.value;
-                render();
-            };
-
-            elements.filterPriority.onchange = () => {
-                state.filters.priority = elements.filterPriority.value;
-                render();
-            };
-
-            elements.resetFiltersBtn.onclick = () => {
-                state.filters.search = '';
-                state.filters.category = 'all';
-                state.filters.priority = 'all';
-                elements.searchInput.value = '';
-                elements.filterCategory.value = 'all';
-                elements.filterPriority.value = 'all';
-                render();
-            };
-
-            // Bulk actions
-            elements.selectAllBtn.onclick = () => {
-                if (state.selectedTasks.size === state.tasks.length) {
-                    state.selectedTasks.clear();
-                } else {
-                    state.tasks.forEach(task => state.selectedTasks.add(task.id));
-                }
-                render();
-            };
-
-            elements.bulkCompleteBtn.onclick = () => {
-                state.selectedTasks.forEach(id => {
-                    const task = state.tasks.find(t => t.id === id);
-                    if (task && !task.completedAt) {
-                        task.completedAt = new Date().toISOString();
-                    }
-                });
-                state.selectedTasks.clear();
-                saveToStorage();
-                render();
-            };
-
-            elements.bulkDeleteBtn.onclick = () => {
-                if (confirm('Seçili görevleri silmek istediğinizden emin misiniz?')) {
-                    state.tasks = state.tasks.filter(t => !state.selectedTasks.has(t.id));
-                    state.selectedTasks.clear();
-                    saveToStorage();
-                    render();
-                }
-            };
-
-            // Archive
-            elements.clearArchiveBtn.onclick = () => {
-                if (confirm('Arşivi temizlemek istediğinizden emin misiniz?')) {
-                    state.archive = [];
-                    saveToStorage();
-                    render();
-                }
-            };
-
-            // Settings
-            elements.defaultSort.onchange = () => {
-                state.settings.defaultSort = elements.defaultSort.value;
-                state.sort = state.settings.defaultSort;
-                saveToStorage();
-                render();
-            };
-
-            elements.archiveAllCompletedBtn.onclick = () => {
-                const completedTasks = state.tasks.filter(t => t.completedAt);
-                state.archive.push(...completedTasks);
-                state.tasks = state.tasks.filter(t => !t.completedAt);
-                saveToStorage();
-                render();
-            };
-
-            elements.deleteAllBtn.onclick = () => {
-                if (confirm('TÜM GÖREVLERİ silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!')) {
-                    state.tasks = [];
-                    state.archive = [];
-                    state.selectedTasks.clear();
-                    saveToStorage();
-                    render();
-                }
-            };
-
-            // Category management
-            elements.addCategoryFromSettingsBtn.onclick = () => {
-                const name = elements.newCategoryInput.value.trim();
-                if (name && !state.categories.includes(name)) {
-                    state.categories.push(name);
-                    saveToStorage();
-                    populateCategories();
-                    elements.newCategoryInput.value = '';
-                }
-            };
-
-            elements.newCategoryInput.onkeypress = (e) => {
-                if (e.key === 'Enter') {
-                    elements.addCategoryFromSettingsBtn.click();
-                }
-            };
-        }
-
-        // Initialize app
-        function init() {
-            loadFromStorage();
-            applyTheme();
-            populateCategories();
-            state.sort = state.settings.defaultSort;
-            elements.defaultSort.value = state.sort;
-            render();
-            initEventListeners();
-        }
-
-        // Start the app
-        init();
-    </script>
 </body>
 </html>

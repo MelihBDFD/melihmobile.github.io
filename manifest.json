@@ -1,7 +1,7 @@
 {
-    "name": "Mobil Yapılacaklar",
-    "short_name": "Yapılacaklar",
-    "description": "Mobil dostu yapılacaklar listesi uygulaması",
+    "name": "To-Do PRO",
+    "short_name": "To-Do PRO",
+    "description": "Profesyonel yapılacaklar listesi uygulaması - analiz ve hatırlatıcılar",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#f8fafc",

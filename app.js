@@ -1,5 +1,402 @@
+const defaultState = {
+    tasks: [],
+    archive: [],
+    categories: ["Genel"],
+    settings: {
+        theme: "light",
+        notifications: false,
+        defaultSort: "createdAtNewest",
+        defaultView: "list",
+        reminderLead: 30
+    },
+    filters: {
+        search: "",
+        category: "all",
+        priority: "all",
+        startDate: "",
+        endDate: ""
+    },
+    sort: "createdAtNewest",
+    view: "list",
+    selection: new Set(),
+    formMode: "create",
+    editingId: null,
+    subtasksBuffer: [],
+    checklistBuffer: []
+};
+
+let state = { ...defaultState };
+
+function loadState() {
+    const data = localStorage.getItem("mobil-todo-data");
+    if (data) {
+        const parsed = JSON.parse(data);
+        state.tasks = parsed.tasks || [];
+        state.archive = parsed.archive || [];
+        state.categories = parsed.categories || ["Genel"];
+        state.settings = { ...defaultState.settings, ...parsed.settings };
+    }
+}
+
+function saveState() {
+    localStorage.setItem("mobil-todo-data", JSON.stringify({
+        tasks: state.tasks,
+        archive: state.archive,
+        categories: state.categories,
+        settings: state.settings
+    }));
+}
+
+function generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleString('tr-TR', {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+    });
+}
+
+function applyTheme() {
+    document.documentElement.setAttribute('data-theme', state.settings.theme);
+}
+
+function populateCategories() {
+    const selects = [dom.categorySelect, dom.filterCategory];
+    selects.forEach(select => {
+        if (!select) return;
+        select.innerHTML = '';
+        state.categories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat;
+            option.textContent = cat;
+            select.appendChild(option);
+        });
+    });
+
+    if (dom.categoryManager) {
+        dom.categoryManager.innerHTML = '';
+        state.categories.forEach(cat => {
+            if (cat === 'Genel') return;
+            const tag = document.createElement('span');
+            tag.className = 'tag';
+            tag.textContent = cat;
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'btn';
+            removeBtn.textContent = '×';
+            removeBtn.onclick = () => {
+                state.categories = state.categories.filter(c => c !== cat);
+                state.tasks.forEach(task => {
+                    if (task.category === cat) task.category = 'Genel';
+                });
+                saveState();
+                populateCategories();
+                render();
+            };
+            tag.appendChild(removeBtn);
+            dom.categoryManager.appendChild(tag);
+        });
+    }
+}
+
+function handleFormSubmit(event) {
+    event.preventDefault();
+
+    const formData = new FormData(dom.form);
+    const taskData = {
+        title: dom.title.value.trim(),
+        description: dom.description.value.trim(),
+        category: dom.categorySelect.value,
+        priority: dom.prioritySelect.value,
+        dueDate: dom.dueDate.value || null,
+        subtasks: state.subtasksBuffer.map(text => ({ text, completed: false })),
+        checklist: state.checklistBuffer.map(item => ({ id: item.id, text: item.text, completed: item.completed }))
+    };
+
+    if (!taskData.title) return;
+
+    if (state.formMode === "edit") {
+        const task = state.tasks.find(t => t.id === state.editingId);
+        if (task) {
+            Object.assign(task, taskData);
+            task.updatedAt = Date.now();
+            saveState();
+        }
+    } else {
+        const task = {
+            id: generateId(),
+            ...taskData,
+            completedAt: null,
+            createdAt: Date.now()
+        };
+        state.tasks.push(task);
+        saveState();
+    }
+
+    resetForm();
+    render();
+}
+
+function resetForm() {
+    dom.form.reset();
+    state.formMode = "create";
+    state.editingId = null;
+    state.subtasksBuffer = [];
+    state.checklistBuffer = [];
+    syncSubtasksBuffer();
+    syncChecklistBuffer();
+    dom.saveTask.textContent = "Görevi Kaydet";
+}
+
+function handleSubtaskInput() {
+    const text = dom.subtaskInput.value.trim();
+    if (text) {
+        state.subtasksBuffer.push(text);
+        syncSubtasksBuffer();
+        dom.subtaskInput.value = '';
+        dom.subtaskInput.focus();
+    }
+}
+
+function handleChecklistInput() {
+    const text = dom.checklistInput.value.trim();
+    if (text) {
+        state.checklistBuffer.push({
+            id: generateId(),
+            text: text,
+            completed: false
+        });
+        syncChecklistBuffer();
+        dom.checklistInput.value = '';
+        dom.checklistInput.focus();
+    }
+}
+
+function syncSubtasksBuffer() {
+    dom.subtaskList.innerHTML = '';
+    state.subtasksBuffer.forEach((text, index) => {
+        addSubtaskToForm(text, index);
+    });
+}
+
+function syncChecklistBuffer() {
+    dom.checklistContainer.innerHTML = '';
+    state.checklistBuffer.forEach((item, index) => {
+        addChecklistItemToForm(item.text, item.completed, item.id);
+    });
+}
+
+function addSubtaskToForm(text, index) {
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.textContent = text;
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'btn';
+    removeBtn.textContent = '×';
+    removeBtn.onclick = () => {
+        state.subtasksBuffer.splice(index, 1);
+        syncSubtasksBuffer();
+    };
+    tag.appendChild(removeBtn);
+    dom.subtaskList.appendChild(tag);
+}
+
+function addChecklistItemToForm(text, completed = false, id) {
+    const item = document.createElement('div');
+    item.className = 'checklist-item';
+    item.dataset.id = id;
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = completed;
+    checkbox.onchange = () => {
+        const bufferItem = state.checklistBuffer.find(item => item.id === id);
+        if (bufferItem) {
+            bufferItem.completed = checkbox.checked;
+        }
+    };
+
+    const span = document.createElement('span');
+    span.textContent = text;
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'btn';
+    removeBtn.textContent = '×';
+    removeBtn.onclick = () => {
+        state.checklistBuffer = state.checklistBuffer.filter(item => item.id !== id);
+        syncChecklistBuffer();
+    };
+
+    item.appendChild(checkbox);
+    item.appendChild(span);
+    item.appendChild(removeBtn);
+    dom.checklistContainer.appendChild(item);
+}
+
+function getFilteredTasks(tasks) {
+    return tasks.filter(task => {
+        if (state.filters.search) {
+            const searchTerm = state.filters.search.toLowerCase();
+            const matches = task.title.toLowerCase().includes(searchTerm) ||
+                          (task.description && task.description.toLowerCase().includes(searchTerm));
+            if (!matches) return false;
+        }
+
+        if (state.filters.category !== 'all' && task.category !== state.filters.category) {
+            return false;
+        }
+
+        if (state.filters.priority !== 'all' && task.priority !== state.filters.priority) {
+            return false;
+        }
+
+        if (state.filters.startDate) {
+            const startDate = new Date(state.filters.startDate);
+            const taskDate = task.dueDate ? new Date(task.dueDate) : null;
+            if (!taskDate || taskDate < startDate) return false;
+        }
+
+        if (state.filters.endDate) {
+            const endDate = new Date(state.filters.endDate);
+            endDate.setHours(23, 59, 59, 999);
+            const taskDate = task.dueDate ? new Date(task.dueDate) : null;
+            if (!taskDate || taskDate > endDate) return false;
+        }
+
+        return true;
+    });
+}
+
+function sortTasks(tasks) {
+    return tasks.sort((a, b) => {
+        switch (state.sort) {
+            case 'createdAtOldest':
+                return new Date(a.createdAt) - new Date(b.createdAt);
+            case 'dueDate':
+                if (!a.dueDate && !b.dueDate) return 0;
+                if (!a.dueDate) return 1;
+                if (!b.dueDate) return -1;
+                return new Date(a.dueDate) - new Date(b.dueDate);
+            case 'priority':
+                const priorities = { low: 1, medium: 2, high: 3, critical: 4 };
+                return priorities[b.priority] - priorities[a.priority];
+            default:
+                return new Date(b.createdAt) - new Date(a.createdAt);
+        }
+    });
+}
+
+function createTaskElement(task, isArchive = false) {
+    const element = dom.template.content.cloneNode(true).firstElementChild;
+    element.dataset.id = task.id;
+    element.draggable = !isArchive;
+
+    const title = element.querySelector('.task-title');
+    const meta = element.querySelector('.task-meta');
+    const description = element.querySelector('.task-description');
+    const checklist = element.querySelector('.task-checklist');
+    const subtasks = element.querySelector('.task-subtasks');
+    const completeBtn = element.querySelector('.complete-btn');
+    const archiveBtn = element.querySelector('.archive-btn');
+    const editBtn = element.querySelector('.edit-btn');
+    const deleteBtn = element.querySelector('.delete-btn');
+    const selectCheckbox = element.querySelector('.task-select');
+
+    title.textContent = task.title;
+
+    const metaParts = [task.category, `Öncelik: ${task.priority}`];
+    if (task.dueDate) {
+        metaParts.push(`Son: ${formatDate(task.dueDate)}`);
+    }
+    meta.textContent = metaParts.join(' • ');
+
+    if (task.description) {
+        description.textContent = task.description;
+        description.style.display = 'block';
+    } else {
+        description.style.display = 'none';
+    }
+
+    if (task.checklist && task.checklist.length > 0) {
+        checklist.innerHTML = '';
+        task.checklist.forEach(item => {
+            const checkItem = document.createElement('div');
+            checkItem.className = 'checklist-item';
+            checkItem.innerHTML = `${item.completed ? '☑' : '☐'} ${item.text}`;
+            checklist.appendChild(checkItem);
+        });
+        checklist.style.display = 'block';
+    } else {
+        checklist.style.display = 'none';
+    }
+
+    if (task.subtasks && task.subtasks.length > 0) {
+        subtasks.innerHTML = '';
+        task.subtasks.forEach(sub => {
+            const subItem = document.createElement('div');
+            subItem.className = 'subtask-item';
+            subItem.textContent = `• ${sub.text}`;
+            subtasks.appendChild(subItem);
+        });
+        subtasks.style.display = 'block';
+    } else {
+        subtasks.style.display = 'none';
+    }
+
+    if (task.completedAt) {
+        element.classList.add('completed');
+    }
+
+    if (task.dueDate && !task.completedAt && new Date(task.dueDate) < new Date()) {
+        element.classList.add('overdue');
+    }
+
+    // Archive'deki görevler için farklı davranış
+    if (isArchive) {
+        completeBtn.style.display = 'none';
+        archiveBtn.style.display = 'none';
+        editBtn.style.display = 'none';
+        selectCheckbox.style.display = 'none';
+        deleteBtn.onclick = () => {
+            if (confirm('Bu görevi kalıcı olarak silmek istediğinizden emin misiniz?')) {
+                deleteTaskFromArchive(task.id);
+            }
+        };
+    } else {
+        if (task.completedAt) {
+            completeBtn.textContent = 'Geri Al';
+        } else {
+            completeBtn.textContent = 'Tamamlandı';
+        }
+        completeBtn.onclick = () => toggleComplete(task.id);
+        archiveBtn.onclick = () => archiveTask(task.id);
+        editBtn.onclick = () => editTask(task.id);
+        deleteBtn.onclick = () => {
+            if (confirm('Bu görevi silmek istediğinizden emin misiniz?')) {
+                deleteTask(task.id);
+            }
+        };
+
+        selectCheckbox.checked = state.selection.has(task.id);
+        selectCheckbox.onchange = () => {
+            if (selectCheckbox.checked) {
+                state.selection.add(task.id);
+            } else {
+                state.selection.delete(task.id);
+            }
+            render();
+        };
+    }
+
+    return element;
+}
+
 const dom = {
     body: document.body,
+    loadingScreen: document.getElementById("loadingScreen"),
     form: document.getElementById("taskForm"),
     title: document.getElementById("taskTitle"),
     description: document.getElementById("taskDescription"),
@@ -56,7 +453,7 @@ const dom = {
     saveCategory: document.getElementById("saveCategory")
 };
 
-function renderTaskList(container, tasks) {
+function renderTaskList(container, tasks, isArchive = false) {
     container.innerHTML = "";
     if (!tasks.length) {
         container.classList.add("empty");
@@ -64,7 +461,7 @@ function renderTaskList(container, tasks) {
     }
     container.classList.remove("empty");
     tasks.forEach(task => {
-        const element = createTaskElement(task);
+        const element = createTaskElement(task, isArchive);
         container.appendChild(element);
     });
 }
@@ -75,7 +472,7 @@ function render() {
     renderTaskList(dom.taskContainer, sorted);
     const archiveFiltered = getFilteredTasks(state.archive);
     const archiveSorted = sortTasks(archiveFiltered);
-    renderTaskList(dom.archiveContainer, archiveSorted);
+    renderTaskList(dom.archiveContainer, archiveSorted, true);
     updateAnalytics();
 }
 
@@ -154,6 +551,16 @@ function deleteTask(id) {
     const index = state.tasks.findIndex(t => t.id === id);
     if (index !== -1) {
         state.tasks.splice(index, 1);
+        state.selection.delete(id);
+        saveState();
+        render();
+    }
+}
+
+function deleteTaskFromArchive(id) {
+    const index = state.archive.findIndex(t => t.id === id);
+    if (index !== -1) {
+        state.archive.splice(index, 1);
         saveState();
         render();
     }
@@ -449,8 +856,7 @@ function init() {
     populateCategories();
     resetFilters();
     render();
-    dom.taskForm.addEventListener("submit", handleFormSubmit);
-    dom.addCategoryBtn.addEventListener("click", handleAddCategory);
+    dom.form.addEventListener("submit", handleFormSubmit);
     dom.addSubtask.addEventListener("click", handleSubtaskInput);
     dom.subtaskInput.addEventListener("keypress", event => {
         if (event.key === "Enter") handleSubtaskInput();
@@ -493,6 +899,13 @@ function init() {
     dom.categoryModal.addEventListener("click", event => {
         if (event.target === dom.categoryModal) cancelNewCategory();
     });
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+            if (dom.categoryModal.classList.contains("show")) {
+                cancelNewCategory();
+            }
+        }
+    });
     dom.categoryManager = document.getElementById("categoryManager");
     dom.newCategoryInput = document.getElementById("newCategoryInput");
     dom.addCategoryFromSettings = document.getElementById("addCategoryFromSettings");
@@ -501,6 +914,14 @@ function init() {
     dom.cancelCategory = document.getElementById("cancelCategory");
     setupDragAndDrop();
     setInterval(checkReminders, 60000);
+
+    // Hide loading screen after initialization
+    setTimeout(() => {
+        dom.loadingScreen.style.opacity = '0';
+        setTimeout(() => {
+            dom.loadingScreen.style.display = 'none';
+        }, 300);
+    }, 500);
 }
 
 document.addEventListener("DOMContentLoaded", init);
