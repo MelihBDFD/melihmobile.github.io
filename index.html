@@ -1,197 +1,34 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gelişmiş To-Do List</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bakımdayız</title>
   <style>
-    * { box-sizing: border-box; }
-    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f4f4f4; }
-    header { text-align: center; margin-bottom: 20px; }
-    .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-    .controls input, .controls select, .controls button { padding: 8px; font-size: 14px; }
-    #board { display: flex; gap: 10px; }
-    .column { flex: 1; background: #fff; border-radius: 4px; padding: 10px; min-height: 300px; }
-    .column h3 { margin-top: 0; }
-    .task { background: #e3e3e3; margin: 5px 0; padding: 8px; border-radius: 4px; cursor: move; }
-    .task[data-priority="1"] { border-left: 4px solid #ff4d4d; }
-    .task[data-priority="2"] { border-left: 4px solid #ff944d; }
-    .task[data-priority="3"] { border-left: 4px solid #ffd24d; }
-    .task[data-priority="4"] { border-left: 4px solid #94ff4d; }
-    .task[data-priority="5"] { border-left: 4px solid #4dff88; }
-    footer { margin-top: 30px; text-align: center; }
-    canvas { max-width: 400px; margin: 0 auto; }
+    body {
+      background-color: #101010;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      font-size: 3em;
+      margin: 0;
+    }
+    p {
+      font-size: 1.2em;
+      color: #ccc;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Gelişmiş To-Do List</h1>
-  </header>
-
-  <div class="controls">
-    <input id="taskTitle" type="text" placeholder="Görev açıklaması (örn. 'Yarın 9'da rapor')" />
-    <input id="taskDate" type="datetime-local" />
-    <select id="taskPriority">
-      <option value="3">Öncelik: Orta</option>
-      <option value="1">Öncelik: Çok Yüksek</option>
-      <option value="2">Öncelik: Yüksek</option>
-      <option value="4">Öncelik: Düşük</option>
-      <option value="5">Öncelik: Çok Düşük</option>
-    </select>
-    <button id="addBtn">Ekle</button>
-    <input id="search" type="text" placeholder="Ara..." />
-    <select id="filterPriority">
-      <option value="">Tüm Öncelikler</option>
-      <option value="1">Çok Yüksek</option>
-      <option value="2">Yüksek</option>
-      <option value="3">Orta</option>
-      <option value="4">Düşük</option>
-      <option value="5">Çok Düşük</option>
-    </select>
-    <button id="clearDone">Tamamlananları Temizle</button>
-  </div>
-
-  <div id="board">
-    <div class="column" data-status="todo">
-      <h3>Yapılacak</h3>
-    </div>
-    <div class="column" data-status="inprogress">
-      <h3>Devam Eden</h3>
-    </div>
-    <div class="column" data-status="done">
-      <h3>Tamamlanan</h3>
-    </div>
-  </div>
-
-  <footer>
-    <canvas id="statusChart"></canvas>
-  </footer>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    // Veri modeli
-    let tasks = JSON.parse(localStorage.getItem('tasks')||'[]');
-    const cols = document.querySelectorAll('.column');
-    const titleInput = document.getElementById('taskTitle');
-    const dateInput = document.getElementById('taskDate');
-    const prioInput = document.getElementById('taskPriority');
-    const addBtn = document.getElementById('addBtn');
-    const searchInput = document.getElementById('search');
-    const filterPrio = document.getElementById('filterPriority');
-    const clearDoneBtn = document.getElementById('clearDone');
-    let chart;
-
-    // Başlat
-    document.addEventListener('DOMContentLoaded', () => {
-      renderAll();
-      initDragDrop();
-      initChart();
-    });
-
-    // Görev ekle
-    addBtn.onclick = () => {
-      let title = titleInput.value.trim();
-      if(!title) return alert('Görev açıklaması gerekli.');
-      let due = dateInput.value;
-      title = title.replace(/yarın/gi, () => {
-        const d = new Date(); d.setDate(d.getDate()+1); d.setHours(9,0,0);
-        due = d.toISOString().slice(0,16);
-        return '';
-      });
-      title = title.replace(/bugün/gi, () => {
-        const d = new Date(); d.setHours(18,0,0);
-        due = d.toISOString().slice(0,16);
-        return '';
-      });
-      const task = {
-        id: Date.now(),
-        title, due, priority: prioInput.value,
-        status: 'todo', created: new Date().toISOString()
-      };
-      tasks.push(task);
-      saveAndRender();
-      titleInput.value=''; dateInput.value=''; prioInput.value='3';
-    };
-
-    // Yerel depolama ve render
-    function saveAndRender() {
-      localStorage.setItem('tasks', JSON.stringify(tasks));
-      renderAll();
-      updateChart();
-    }
-
-    // Tüm kolon ve filtreleri çiz
-    function renderAll() {
-      cols.forEach(c => c.querySelectorAll('.task').forEach(n=>n.remove()));
-      const q = searchInput.value.toLowerCase();
-      const f = filterPrio.value;
-      tasks.filter(t => {
-        if(f && t.priority!==f) return false;
-        if(q && !t.title.toLowerCase().includes(q)) return false;
-        return true;
-      }).forEach(renderTask);
-    }
-
-    // Tek bir görevi çiz
-    function renderTask(t) {
-      const el = document.createElement('div');
-      el.className = 'task';
-      el.setAttribute('draggable','true');
-      el.dataset.id = t.id;
-      el.dataset.priority = t.priority;
-      el.innerHTML = '<strong>'+t.title+'</strong>'
-        + (t.due?'<br/><small>'+t.due.replace('T',' ')+'</small>':'');
-      cols.forEach(c => {
-        if(c.dataset.status===t.status) c.appendChild(el);
-      });
-      el.addEventListener('dragstart', e=> {
-        e.dataTransfer.setData('text/plain', t.id);
-      });
-    }
-
-    // Drag & drop
-    function initDragDrop() {
-      cols.forEach(col => {
-        col.addEventListener('dragover', e=> e.preventDefault());
-        col.addEventListener('drop', e=> {
-          e.preventDefault();
-          const id = e.dataTransfer.getData('text/plain');
-          const task = tasks.find(x=>x.id==id);
-          task.status = col.dataset.status;
-          saveAndRender();
-        });
-      });
-    }
-
-    // Arama ve filtre
-    searchInput.oninput = renderAll;
-    filterPrio.onchange = renderAll;
-
-    // Tamamlananları temizle
-    clearDoneBtn.onclick = () => {
-      tasks = tasks.filter(t=>t.status!=='done');
-      saveAndRender();
-    };
-
-    // Grafik
-    function initChart() {
-      const ctx = document.getElementById('statusChart').getContext('2d');
-      chart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: ['Yapılacak','Devam Eden','Tamamlanan'],
-          datasets: [{ data: [0,0,0], backgroundColor:['#3498db','#f1c40f','#2ecc71'] }]
-        },
-        options:{ responsive:true, maintainAspectRatio:false }
-      });
-      updateChart();
-    }
-    function updateChart() {
-      const counts = { todo:0, inprogress:0, done:0 };
-      tasks.forEach(t=> counts[t.status]++);
-      chart.data.datasets[0].data = [counts.todo, counts.inprogress, counts.done];
-      chart.update();
-    }
-  </script>
+  <h1>Şu anda bakımda</h1>
+  <p>Lütfen daha sonra tekrar ziyaret edin.</p>
 </body>
 </html>
