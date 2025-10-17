@@ -1,257 +1,197 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#2563eb">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="To-Do Mobile">
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="styles.css">
-    <script src="app.js" defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gelişmiş To-Do List</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f4f4f4; }
+    header { text-align: center; margin-bottom: 20px; }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+    .controls input, .controls select, .controls button { padding: 8px; font-size: 14px; }
+    #board { display: flex; gap: 10px; }
+    .column { flex: 1; background: #fff; border-radius: 4px; padding: 10px; min-height: 300px; }
+    .column h3 { margin-top: 0; }
+    .task { background: #e3e3e3; margin: 5px 0; padding: 8px; border-radius: 4px; cursor: move; }
+    .task[data-priority="1"] { border-left: 4px solid #ff4d4d; }
+    .task[data-priority="2"] { border-left: 4px solid #ff944d; }
+    .task[data-priority="3"] { border-left: 4px solid #ffd24d; }
+    .task[data-priority="4"] { border-left: 4px solid #94ff4d; }
+    .task[data-priority="5"] { border-left: 4px solid #4dff88; }
+    footer { margin-top: 30px; text-align: center; }
+    canvas { max-width: 400px; margin: 0 auto; }
+  </style>
 </head>
 <body>
-    <header class="app-header">
-        <div class="brand">
-            <h1>To-Do PRO</h1>
-            <p>UYGULAMA ŞU ANDA GELİŞTİRİLİYOR</p>
-        </div>
-        <div class="header-actions">
-            <span id="userInfo" class="user-info">
-                👤 <span id="currentUserName"></span>
-                <span id="userStats" style="font-size: 0.8rem; opacity: 0.8; margin-left: 8px;">
-                    (<span id="userTaskCount">0</span> görev)
-                </span>
-            </span>
-            <button id="themeToggle" aria-label="Tema değiştir">Tema</button>
-            <button id="notificationToggle" aria-label="Bildirimleri aktifleştir">Bildirim</button>
-            <button id="exportData" aria-label="Görevleri dışa aktar">Dışa aktar</button>
-            <label class="import-label" for="importData">İçe aktar</label>
-            <input type="file" id="importData" accept="application/json">
-        </div>
-    </header>
+  <header>
+    <h1>Gelişmiş To-Do List</h1>
+  </header>
 
-    <main class="layout">
-        <section class="panel" id="taskFormPanel">
-            <h2>Yeni Görev</h2>
-            <form id="taskForm">
-                <div class="field">
-                    <label for="taskTitle">Başlık</label>
-                    <input id="taskTitle" name="title" type="text" required>
-                </div>
-                <div class="field">
-                    <label for="taskDescription">Açıklama</label>
-                    <textarea id="taskDescription" name="description" rows="3"></textarea>
-                </div>
-                <div class="field-grid">
-                    <div class="field">
-                        <label for="taskCategory">Kategori</label>
-                        <div class="inline-field">
-                            <select id="taskCategory" name="category"></select>
-                            <button type="button" id="addCategory" data-tooltip="Yeni kategori ekle">+</button>
-                        </div>
-                    </div>
-                    <div class="field">
-                        <label for="taskPriority">Öncelik</label>
-                        <select id="taskPriority" name="priority">
-                            <option value="low">Düşük</option>
-                            <option value="medium" selected>Orta</option>
-                            <option value="high">Yüksek</option>
-                            <option value="critical">Kritik</option>
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label for="taskDueDate">Son Tarih</label>
-                        <input id="taskDueDate" name="dueDate" type="datetime-local">
-                    </div>
-                </div>
-                <div class="field">
-                    <label>Alt Görevler</label>
-                    <div id="subtaskList" class="tags"></div>
-                    <div class="inline-field">
-                        <input id="subtaskInput" type="text" placeholder="Alt görev ekle">
-                        <button type="button" id="addSubtask">Ekle</button>
-                    </div>
-                </div>
-                <div class="field">
-                    <label>Kontrol Listesi</label>
-                    <div id="checklistItems" class="checklist"></div>
-                    <div class="inline-field">
-                        <input id="checklistInput" type="text" placeholder="Öğe ekle">
-                        <button type="button" id="addChecklist">Ekle</button>
-                    </div>
-                </div>
-                <button type="submit" id="saveTask">Görevi Kaydet</button>
-            </form>
-        </section>
+  <div class="controls">
+    <input id="taskTitle" type="text" placeholder="Görev açıklaması (örn. 'Yarın 9'da rapor')" />
+    <input id="taskDate" type="datetime-local" />
+    <select id="taskPriority">
+      <option value="3">Öncelik: Orta</option>
+      <option value="1">Öncelik: Çok Yüksek</option>
+      <option value="2">Öncelik: Yüksek</option>
+      <option value="4">Öncelik: Düşük</option>
+      <option value="5">Öncelik: Çok Düşük</option>
+    </select>
+    <button id="addBtn">Ekle</button>
+    <input id="search" type="text" placeholder="Ara..." />
+    <select id="filterPriority">
+      <option value="">Tüm Öncelikler</option>
+      <option value="1">Çok Yüksek</option>
+      <option value="2">Yüksek</option>
+      <option value="3">Orta</option>
+      <option value="4">Düşük</option>
+      <option value="5">Çok Düşük</option>
+    </select>
+    <button id="clearDone">Tamamlananları Temizle</button>
+  </div>
 
-        <section class="panel" id="filtersPanel">
-            <h2>Filtreler ve Sıralama</h2>
-            <div class="filters">
-                <div class="field">
-                    <label for="searchInput">Ara</label>
-                    <input id="searchInput" type="search" placeholder="Başlık veya açıklama">
-                </div>
-                <div class="field">
-                    <label for="filterCategory">Kategori</label>
-                    <select id="filterCategory"></select>
-                </div>
-                <div class="field">
-                    <label for="filterPriority">Öncelik</label>
-                    <select id="filterPriority">
-                        <option value="all">Tümü</option>
-                        <option value="low">Düşük</option>
-                        <option value="medium">Orta</option>
-                        <option value="high">Yüksek</option>
-                        <option value="critical">Kritik</option>
-                    </select>
-                </div>
-                <div class="field-grid">
-                    <div class="field">
-                        <label for="filterStartDate">Başlangıç</label>
-                        <input id="filterStartDate" type="date">
-                    </div>
-                    <div class="field">
-                        <label for="filterEndDate">Bitiş</label>
-                        <input id="filterEndDate" type="date">
-                    </div>
-                </div>
-                <div class="field">
-                    <label for="sortSelect">Sırala</label>
-                    <select id="sortSelect">
-                        <option value="createdAtNewest">Yeni eklenen</option>
-                        <option value="createdAtOldest">Eski eklenen</option>
-                        <option value="dueDate">Son tarihe göre</option>
-                        <option value="priority">Önceliğe göre</option>
-                    </select>
-                </div>
-                <div class="field view-toggle">
-                    <span>Görünüm</span>
-                    <button type="button" id="listViewBtn" class="active">Liste</button>
-                    <button type="button" id="cardViewBtn">Kart</button>
-                </div>
-                <div class="field">
-                    <button type="button" id="resetFilters">Filtreleri Temizle</button>
-                </div>
-            </div>
-        </section>
-
-        <section class="panel" id="analyticsPanel">
-            <h2>Analitik</h2>
-            <div class="analytics-grid">
-                <div class="stat">
-                    <span>Toplam Görev</span>
-                    <strong id="statTotal">0</strong>
-                </div>
-                <div class="stat">
-                    <span>Tamamlanan</span>
-                    <strong id="statCompleted">0</strong>
-                </div>
-                <div class="stat">
-                    <span>Aktif</span>
-                    <strong id="statActive">0</strong>
-                </div>
-                <div class="stat">
-                    <span>Geciken</span>
-                    <strong id="statOverdue">0</strong>
-                </div>
-            </div>
-            <div class="chart" id="categoryChart"></div>
-            <div class="timeline" id="dailySummary"></div>
-        </section>
-
-        <section class="panel wide" id="tasksPanel">
-            <div class="panel-header">
-                <h2>Görevler</h2>
-                <div class="bulk-actions">
-                    <button id="selectAll">Tümünü Seç</button>
-                    <button id="clearSelection">Seçimi Temizle</button>
-                    <button id="bulkComplete">Seçileni Tamamla</button>
-                    <button id="bulkDelete">Seçileni Sil</button>
-                    <button id="bulkArchive">Seçileni Arşivle</button>
-                </div>
-            </div>
-            <div id="taskContainer" class="task-container" data-view="list"></div>
-        </section>
-
-        <section class="panel" id="archivePanel">
-            <div class="panel-header">
-                <h2>Arşiv</h2>
-                <button id="clearArchive">Arşivi Temizle</button>
-            </div>
-            <div id="archiveContainer" class="task-container" data-view="list"></div>
-        </section>
-
-        <section class="panel" id="settingsPanel">
-            <h2>Ayarlar</h2>
-            <form id="settingsForm">
-                <div class="field">
-                    <label for="defaultSort">Varsayılan sıralama</label>
-                    <select id="defaultSort" name="defaultSort">
-                        <option value="createdAtNewest">Yeni eklenen</option>
-                        <option value="createdAtOldest">Eski eklenen</option>
-                        <option value="dueDate">Son tarihe göre</option>
-                        <option value="priority">Önceliğe göre</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label for="defaultView">Varsayılan görünüm</label>
-                    <select id="defaultView" name="defaultView">
-                        <option value="list">Liste</option>
-                        <option value="card">Kart</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label for="reminderLead">Hatırlatma süresi (dakika)</label>
-                    <input id="reminderLead" name="reminderLead" type="number" min="1" value="30">
-                </div>
-                <div class="field">
-                    <label>Kategoriler</label>
-                    <div id="categoryManager" class="tags"></div>
-                    <div class="inline-field">
-                        <input id="newCategoryInput" type="text" placeholder="Kategori adı">
-                        <button type="button" id="addCategoryFromSettings">Ekle</button>
-                    </div>
-                </div>
-                <button type="submit">Kaydet</button>
-            </form>
-        </section>
-    </main>
-
-    <template id="taskTemplate">
-        <article class="task" draggable="true">
-            <div class="task-header">
-                <div class="task-drag">☰</div>
-                <div class="task-main">
-                    <div class="task-title"></div>
-                    <div class="task-meta"></div>
-                </div>
-                <div class="task-controls">
-                    <input type="checkbox" class="task-select" aria-label="Görevi seç">
-                    <button class="complete-btn">Tamamlandı</button>
-                    <button class="archive-btn">Arşivle</button>
-                    <button class="edit-btn">Düzenle</button>
-                    <button class="delete-btn">Sil</button>
-                </div>
-            </div>
-            <div class="task-body">
-                <p class="task-description"></p>
-                <div class="task-checklist"></div>
-                <div class="task-subtasks"></div>
-            </div>
-        </article>
-    </template>
-
-    <div id="categoryModal" class="modal">
-        <div class="modal-content">
-            <h3>Yeni Kategori Ekle</h3>
-            <input id="newCategoryModalInput" type="text" placeholder="Kategori adı" maxlength="50">
-            <div class="modal-actions">
-                <button id="cancelCategory">İptal</button>
-                <button id="saveCategory" class="primary">Ekle</button>
-            </div>
-        </div>
+  <div id="board">
+    <div class="column" data-status="todo">
+      <h3>Yapılacak</h3>
     </div>
+    <div class="column" data-status="inprogress">
+      <h3>Devam Eden</h3>
+    </div>
+    <div class="column" data-status="done">
+      <h3>Tamamlanan</h3>
+    </div>
+  </div>
+
+  <footer>
+    <canvas id="statusChart"></canvas>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Veri modeli
+    let tasks = JSON.parse(localStorage.getItem('tasks')||'[]');
+    const cols = document.querySelectorAll('.column');
+    const titleInput = document.getElementById('taskTitle');
+    const dateInput = document.getElementById('taskDate');
+    const prioInput = document.getElementById('taskPriority');
+    const addBtn = document.getElementById('addBtn');
+    const searchInput = document.getElementById('search');
+    const filterPrio = document.getElementById('filterPriority');
+    const clearDoneBtn = document.getElementById('clearDone');
+    let chart;
+
+    // Başlat
+    document.addEventListener('DOMContentLoaded', () => {
+      renderAll();
+      initDragDrop();
+      initChart();
+    });
+
+    // Görev ekle
+    addBtn.onclick = () => {
+      let title = titleInput.value.trim();
+      if(!title) return alert('Görev açıklaması gerekli.');
+      let due = dateInput.value;
+      title = title.replace(/yarın/gi, () => {
+        const d = new Date(); d.setDate(d.getDate()+1); d.setHours(9,0,0);
+        due = d.toISOString().slice(0,16);
+        return '';
+      });
+      title = title.replace(/bugün/gi, () => {
+        const d = new Date(); d.setHours(18,0,0);
+        due = d.toISOString().slice(0,16);
+        return '';
+      });
+      const task = {
+        id: Date.now(),
+        title, due, priority: prioInput.value,
+        status: 'todo', created: new Date().toISOString()
+      };
+      tasks.push(task);
+      saveAndRender();
+      titleInput.value=''; dateInput.value=''; prioInput.value='3';
+    };
+
+    // Yerel depolama ve render
+    function saveAndRender() {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+      renderAll();
+      updateChart();
+    }
+
+    // Tüm kolon ve filtreleri çiz
+    function renderAll() {
+      cols.forEach(c => c.querySelectorAll('.task').forEach(n=>n.remove()));
+      const q = searchInput.value.toLowerCase();
+      const f = filterPrio.value;
+      tasks.filter(t => {
+        if(f && t.priority!==f) return false;
+        if(q && !t.title.toLowerCase().includes(q)) return false;
+        return true;
+      }).forEach(renderTask);
+    }
+
+    // Tek bir görevi çiz
+    function renderTask(t) {
+      const el = document.createElement('div');
+      el.className = 'task';
+      el.setAttribute('draggable','true');
+      el.dataset.id = t.id;
+      el.dataset.priority = t.priority;
+      el.innerHTML = '<strong>'+t.title+'</strong>'
+        + (t.due?'<br/><small>'+t.due.replace('T',' ')+'</small>':'');
+      cols.forEach(c => {
+        if(c.dataset.status===t.status) c.appendChild(el);
+      });
+      el.addEventListener('dragstart', e=> {
+        e.dataTransfer.setData('text/plain', t.id);
+      });
+    }
+
+    // Drag & drop
+    function initDragDrop() {
+      cols.forEach(col => {
+        col.addEventListener('dragover', e=> e.preventDefault());
+        col.addEventListener('drop', e=> {
+          e.preventDefault();
+          const id = e.dataTransfer.getData('text/plain');
+          const task = tasks.find(x=>x.id==id);
+          task.status = col.dataset.status;
+          saveAndRender();
+        });
+      });
+    }
+
+    // Arama ve filtre
+    searchInput.oninput = renderAll;
+    filterPrio.onchange = renderAll;
+
+    // Tamamlananları temizle
+    clearDoneBtn.onclick = () => {
+      tasks = tasks.filter(t=>t.status!=='done');
+      saveAndRender();
+    };
+
+    // Grafik
+    function initChart() {
+      const ctx = document.getElementById('statusChart').getContext('2d');
+      chart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Yapılacak','Devam Eden','Tamamlanan'],
+          datasets: [{ data: [0,0,0], backgroundColor:['#3498db','#f1c40f','#2ecc71'] }]
+        },
+        options:{ responsive:true, maintainAspectRatio:false }
+      });
+      updateChart();
+    }
+    function updateChart() {
+      const counts = { todo:0, inprogress:0, done:0 };
+      tasks.forEach(t=> counts[t.status]++);
+      chart.data.datasets[0].data = [counts.todo, counts.inprogress, counts.done];
+      chart.update();
+    }
+  </script>
 </body>
 </html>
