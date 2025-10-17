@@ -30,7 +30,8 @@
 
             <!-- Login Form -->
             <form id="loginForm" class="auth-form">
-                <h2>Giriş Yap</h2>
+                <h2>Hoş Geldiniz</h2>
+                <p style="text-align: center; margin-bottom: 20px; color: var(--color-muted);">Hesabınıza giriş yapın</p>
                 <div class="form-group">
                     <label for="usernameInput">Kullanıcı Adı</label>
                     <input type="text" id="usernameInput" required>
@@ -40,12 +41,12 @@
                     <input type="password" id="passwordInput" required>
                 </div>
                 <button type="submit" id="loginBtn" class="auth-btn primary">Giriş Yap</button>
-                <button type="button" id="showRegisterBtn" class="auth-btn secondary">Kaydol</button>
             </form>
 
             <!-- Register Form -->
-            <form id="registerForm" class="auth-form" style="display: none;">
-                <h2>Kaydol</h2>
+            <form id="registerForm" class="auth-form">
+                <h2>İlk Kez Mi?</h2>
+                <p style="text-align: center; margin-bottom: 20px; color: var(--color-muted);">Yeni hesap oluşturun</p>
                 <div class="form-group">
                     <label for="registerUsernameInput">Kullanıcı Adı</label>
                     <input type="text" id="registerUsernameInput" required>
@@ -55,7 +56,6 @@
                     <input type="password" id="registerPasswordInput" required>
                 </div>
                 <button type="submit" id="registerBtn" class="auth-btn primary">Kaydol</button>
-                <button type="button" id="showLoginBtn" class="auth-btn secondary">Giriş Yap</button>
             </form>
         </div>
     </div>
@@ -68,11 +68,18 @@
                 <p>Profesyonel görev yönetimi ve analiz</p>
             </div>
             <div class="header-actions">
+                <span id="userInfo" class="user-info">
+                    👤 <span id="currentUserName"></span>
+                    <span id="userStats" style="font-size: 0.8rem; opacity: 0.8; margin-left: 8px;">
+                        (<span id="userTaskCount">0</span> görev)
+                    </span>
+                </span>
                 <button id="themeToggle" aria-label="Tema değiştir">Tema</button>
                 <button id="notificationToggle" aria-label="Bildirimleri aktifleştir">Bildirim</button>
                 <button id="exportData" aria-label="Görevleri dışa aktar">Dışa aktar</button>
                 <label class="import-label" for="importData">İçe aktar</label>
                 <input type="file" id="importData" accept="application/json">
+                <button id="logoutBtn" class="auth-btn secondary" style="margin-left: 8px;">Çıkış</button>
             </div>
         </header>
 
