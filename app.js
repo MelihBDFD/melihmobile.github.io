@@ -18,9 +18,102 @@ const App = () => {
   const [newSubtask, setNewSubtask] = React.useState('');
   const [priority, setPriority] = React.useState('orta');
   const [deadline, setDeadline] = React.useState('');
-  const [searchTerm, setSearchTerm] = React.useState('');
+  const [badges, setBadges] = React.useState(() => {
+    const saved = localStorage.getItem('user-badges');
+    return saved ? JSON.parse(saved) : [];
+  });
 
-  // Toast sistemi
+  const [habits, setHabits] = React.useState(() => {
+    const saved = localStorage.getItem('user-habits');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [motivationMessage, setMotivationMessage] = React.useState('');
+  const [showMotivation, setShowMotivation] = React.useState(false);
+
+  // Rozet kazanma sistemi
+  const checkAndAwardBadges = (action) => {
+    const newBadges = [...badges];
+    let badgeAwarded = false;
+
+    // İlk görev rozeti
+    if (action === 'first-task' && !badges.includes('ilk-görev')) {
+      newBadges.push('ilk-görev');
+      badgeAwarded = true;
+    }
+
+    // 10 görev tamamlama rozeti
+    if (action === 'task-completed' && todos.filter(t => t.completed).length >= 10 && !badges.includes('görev-avcısı')) {
+      newBadges.push('görev-avcısı');
+      badgeAwarded = true;
+    }
+
+    // 7 gün seri tamamlama rozeti
+    if (action === 'streak-7' && !badges.includes('seri-tamamlama')) {
+      newBadges.push('seri-tamamlama');
+      badgeAwarded = true;
+    }
+
+    if (badgeAwarded) {
+      setBadges(newBadges);
+      localStorage.setItem('user-badges', JSON.stringify(newBadges));
+      showToast(`🏆 Yeni rozet kazandın: ${newBadges[newBadges.length - 1]}`);
+      showMotivationMessage();
+    }
+  };
+
+  // Motivasyon mesajları
+  const showMotivationMessage = () => {
+    const messages = [
+      "Harika gidiyorsun! 🔥",
+      "Bugün çok verimlisın! 💪",
+      "Hedefe bir adım daha yakınsın! 🎯",
+      "Mükemmel iş çıkarıyorsun! ⭐",
+      "Devam et, başarıyorsun! 🚀"
+    ];
+
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    setMotivationMessage(randomMessage);
+    setShowMotivation(true);
+
+    setTimeout(() => {
+      setShowMotivation(false);
+    }, 3000);
+  };
+
+  // Alışkanlık takip sistemi
+  const addHabit = (habitText) => {
+    const newHabit = {
+      id: Date.now(),
+      text: habitText,
+      streak: 0,
+      completedToday: false,
+      createdAt: new Date().toISOString()
+    };
+
+    const updatedHabits = [...habits, newHabit];
+    setHabits(updatedHabits);
+    localStorage.setItem('user-habits', JSON.stringify(updatedHabits));
+    showToast('Yeni alışkanlık eklendi');
+  };
+
+  // Alışkanlık tamamlama
+  const completeHabit = (habitId) => {
+    const updatedHabits = habits.map(habit => {
+      if (habit.id === habitId && !habit.completedToday) {
+        return {
+          ...habit,
+          streak: habit.streak + 1,
+          completedToday: true
+        };
+      }
+      return habit;
+    });
+
+    setHabits(updatedHabits);
+    localStorage.setItem('user-habits', JSON.stringify(updatedHabits));
+    showMotivationMessage();
+  };
   const showToast = (message) => {
     setToast(message);
     setTimeout(() => setToast(null), 3000);
@@ -395,15 +488,58 @@ const App = () => {
         </div>
       )}
 
-      {/* Toast Bildirimleri */}
-      {toast && (
-        <div className="toast">
-          {toast}
+      {/* Motivasyon Bildirimi */}
+      {showMotivation && (
+        <div className="motivation-popup">
+          <div className="motivation-content">
+            <span className="motivation-emoji">🎉</span>
+            <span className="motivation-text">{motivationMessage}</span>
+          </div>
         </div>
       )}
-    </div>
-  );
-};
+
+      {/* Rozetler Bölümü */}
+      {badges.length > 0 && (
+        <div className="badges-section">
+          <h3>🏆 Kazanılan Rozetler</h3>
+          <div className="badges-grid">
+            {badges.map(badge => (
+              <div key={badge} className="badge-item">
+                <span className="badge-emoji">
+                  {badge === 'ilk-görev' && '🐣'}
+                  {badge === 'görev-avcısı' && '💪'}
+                  {badge === 'seri-tamamlama' && '🔥'}
+                </span>
+                <span className="badge-name">{badge}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Alışkanlıklar Bölümü */}
+      {habits.length > 0 && (
+        <div className="habits-section">
+          <h3>📅 Alışkanlıklar</h3>
+          <div className="habits-list">
+            {habits.map(habit => (
+              <div key={habit.id} className="habit-item">
+                <div className="habit-info">
+                  <span className="habit-text">{habit.text}</span>
+                  <span className="habit-streak">🔥 {habit.streak} gün</span>
+                </div>
+                <button
+                  onClick={() => completeHabit(habit.id)}
+                  disabled={habit.completedToday}
+                  className={`habit-complete-btn ${habit.completedToday ? 'completed' : ''}`}
+                >
+                  {habit.completedToday ? '✅' : '✓'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
