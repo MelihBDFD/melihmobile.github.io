@@ -6,6 +6,7 @@ class TodoMobile {
         this.currentFilter = 'all';
         this.isEditMode = false;
         this.editTaskId = null;
+        this.currentUser = null;
         this.init();
     }
 
@@ -14,6 +15,128 @@ class TodoMobile {
         this.bindEvents();
         this.renderTasks();
         this.setupPWA();
+    }
+
+    // Auth kontrolü
+    checkAuth() {
+        const user = this.getCurrentUser();
+        if (user) {
+            this.currentUser = user;
+            this.showMainApp();
+        } else {
+            this.showAuthModal();
+        }
+    }
+
+    // Kullanıcı bilgilerini al
+    getCurrentUser() {
+        try {
+            const user = localStorage.getItem('todomobile_user');
+            return user ? JSON.parse(user) : null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    // Kullanıcı bilgilerini kaydet
+    saveCurrentUser(user) {
+        try {
+            localStorage.setItem('todomobile_user', JSON.stringify(user));
+            this.currentUser = user;
+        } catch (error) {
+            console.error('Kullanıcı kaydedilirken hata:', error);
+        }
+    }
+
+    // Ana uygulamayı göster
+    showMainApp() {
+        document.getElementById('authModal').classList.remove('active');
+        // Kullanıcı adını header'da göster
+        const headerTitle = document.querySelector('.app-title');
+        if (headerTitle && this.currentUser) {
+            headerTitle.textContent = `Merhaba, ${this.currentUser.name.split(' ')[0]}!`;
+        }
+    }
+
+    // Auth modalını göster
+    showAuthModal() {
+        document.getElementById('authModal').classList.add('active');
+        this.bindAuthEvents();
+    }
+
+    // Auth olaylarını bağla
+    bindAuthEvents() {
+        // Auth tabları
+        document.querySelectorAll('.auth-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                this.switchAuthTab(e.target.dataset.tab);
+            });
+        });
+
+        // Auth formu
+        document.getElementById('authForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleAuth();
+        });
+
+        // Auth modal kapatma
+        document.getElementById('authModal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close')) {
+                // Demo modda kapatma engelle
+            }
+        });
+    }
+
+    // Auth tab değiştirme
+    switchAuthTab(tab) {
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+
+        const nameGroup = document.getElementById('nameGroup');
+        const authTitle = document.getElementById('authTitle');
+        const authBtn = document.getElementById('authBtn');
+
+        if (tab === 'register') {
+            nameGroup.style.display = 'block';
+            authTitle.textContent = 'TodoMobile\'e Kayıt Ol';
+            authBtn.textContent = 'Kayıt Ol';
+        } else {
+            nameGroup.style.display = 'none';
+            authTitle.textContent = 'TodoMobile\'e Giriş Yap';
+            authBtn.textContent = 'Giriş Yap';
+        }
+    }
+
+    // Auth işlemleri
+    handleAuth() {
+        const email = document.getElementById('authEmail').value;
+        const password = document.getElementById('authPassword').value;
+        const name = document.getElementById('authName').value;
+
+        if (!email || !password) {
+            this.showNotification('E-posta ve şifre gerekli!', 'error');
+            return;
+        }
+
+        const isRegister = document.querySelector('.auth-tab.active').dataset.tab === 'register';
+
+        if (isRegister && !name) {
+            this.showNotification('Ad soyad gerekli!', 'error');
+            return;
+        }
+
+        // Demo mod - herhangi bir bilgi ile giriş yapılabilir
+        const user = {
+            id: Date.now().toString(),
+            name: isRegister ? name : 'Demo Kullanıcı',
+            email: email,
+            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(isRegister ? name : 'Demo Kullanıcı')}&background=3b82f6&color=fff&size=128`,
+            joinedAt: new Date().toISOString()
+        };
+
+        this.saveCurrentUser(user);
+        this.showNotification(`Hoş geldiniz, ${user.name}!`, 'success');
+        this.showMainApp();
     }
 
     // Olay dinleyicilerini bağla
@@ -72,8 +195,16 @@ class TodoMobile {
             }
         });
 
-        // Tema değişikliği için
-        this.setupThemeToggle();
+        // Menü
+        document.getElementById('menuBtn').addEventListener('click', () => {
+            this.openMenuModal();
+        });
+
+        document.getElementById('menuModal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close')) {
+                this.closeMenuModal();
+            }
+        });
     }
 
     // Hızlı görev ekleme
@@ -418,6 +549,15 @@ class TodoMobile {
         document.getElementById('searchResults').innerHTML = '';
     }
 
+    // Menü modalı
+    openMenuModal() {
+        document.getElementById('menuModal').classList.add('active');
+    }
+
+    closeMenuModal() {
+        document.getElementById('menuModal').classList.remove('active');
+    }
+
     bindSearchEvents() {
         const searchInput = document.getElementById('searchInput');
         const searchResults = document.getElementById('searchResults');
@@ -610,11 +750,139 @@ class TodoMobile {
                     });
             });
         }
+        // Helper bot
+        this.addHelperBot();
     }
 
     // Tema değiştirme
     setupThemeToggle() {
         // Daha sonra eklenebilir
+    }
+
+    // Helper bot sistemi
+    addHelperBot() {
+        // Helper bot butonunu ekle
+        const helperBtn = document.createElement('button');
+        helperBtn.className = 'btn-icon helper-bot-btn';
+        helperBtn.innerHTML = '<i class="fas fa-robot"></i>';
+        helperBtn.title = 'TodoBot Yardımcı';
+        helperBtn.onclick = () => this.openHelperModal();
+        
+        // Header'a ekle
+        const headerActions = document.querySelector('.header-actions');
+        headerActions.insertBefore(helperBtn, headerActions.firstChild);
+    }
+
+    // Helper modalı aç
+    openHelperModal() {
+        document.getElementById('helperModal').classList.add('active');
+        this.bindHelperEvents();
+    }
+
+    // Helper olaylarını bağla
+    bindHelperEvents() {
+        const helperInput = document.getElementById('helperInput');
+        const helperSend = document.getElementById('helperSend');
+        const helperMessages = document.getElementById('helperMessages');
+
+        // Gönder butonu
+        helperSend.onclick = () => {
+            const message = helperInput.value.trim();
+            if (message) {
+                this.sendHelperMessage(message);
+                helperInput.value = '';
+            }
+        };
+
+        // Enter ile gönderme
+        helperInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                helperSend.click();
+            }
+        });
+
+        // Öneri butonları
+        document.querySelectorAll('.suggestion-btn').forEach(btn => {
+            btn.onclick = () => {
+                const suggestion = btn.dataset.suggestion;
+                this.sendHelperMessage(suggestion);
+            };
+        });
+
+        // Modal kapatma
+        document.getElementById('helperModal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close')) {
+                document.getElementById('helperModal').classList.remove('active');
+            }
+        });
+    }
+
+    // Helper mesajı gönder
+    sendHelperMessage(message) {
+        const helperMessages = document.getElementById('helperMessages');
+        
+        // Kullanıcı mesajını ekle
+        const userMessage = document.createElement('div');
+        userMessage.className = 'helper-message user-message';
+        userMessage.innerHTML = `<div class="message-content">${this.escapeHtml(message)}</div>`;
+        helperMessages.appendChild(userMessage);
+
+        // Bot yanıtını ekle
+        setTimeout(() => {
+            const botResponse = this.getBotResponse(message);
+            const botMessage = document.createElement('div');
+            botMessage.className = 'helper-message bot-message';
+            botMessage.innerHTML = `<div class="message-content">${botResponse}</div>`;
+            helperMessages.appendChild(botMessage);
+            
+            // Scroll to bottom
+            helperMessages.scrollTop = helperMessages.scrollHeight;
+        }, 500);
+    }
+
+    // Bot yanıtlarını al
+    getBotResponse(message) {
+        const responses = {
+            'merhaba': 'Merhaba! Size nasıl yardımcı olabilirim?',
+            'selam': 'Selam! TodoBot olarak görev yönetimi konusunda yardımcı olabilirim.',
+            'yardım': 'Size şu konularda yardımcı olabilirim:\n• Görev ekleme ve düzenleme\n• Öncelik ayarlama\n• Alt görev kullanımı\n• Filtreleme seçenekleri\n• Veri yönetimi',
+            'görev ekleme': 'Görev eklemek için:\n1. Hızlı ekleme kutusuna yazın\n2. Veya + butonuna tıklayın\n3. Detaylı formu doldurun',
+            'öncelik': 'Öncelik seviyeleri:\n🔴 Yüksek: Kritik görevler\n🟡 Orta: Normal görevler\n🟢 Düşük: Daha az önemli görevler',
+            'alt görev': 'Alt görevler, ana görevi küçük parçalara bölmenizi sağlar. Her alt görevi ayrı ayrı tamamlayabilirsiniz.',
+            'filtreleme': 'Filtreleme seçenekleri:\n• Tümü: Tüm görevler\n• Bugün: Bugünün görevleri\n• Yaklaşan: Gelecek görevler\n• Tamamlanan: Biten görevler\n• Yüksek Öncelik: Kritik görevler',
+            'veri': 'Verilerinizi:\n• Yerel olarak tarayıcıda saklanır\n• Dışa aktarma ile yedekleyebilirsiniz\n• İçe aktarma ile geri yükleyebilirsiniz',
+            'bugün': this.generateTodaySuggestions(),
+            'öneri': this.generateTodaySuggestions(),
+            'teşekkür': 'Rica ederim! Başka sorunuz var mı?',
+            'sağol': 'Rica ederim! Başka bir konuda yardımcı olabilirim.',
+            'bye': 'Görüşürüz! Başka zaman yardımcı olurum.',
+            'güle güle': 'Görüşürüz! İyi günler!'
+        };
+
+        const lowerMessage = message.toLowerCase();
+        
+        // Anahtar kelimeleri kontrol et
+        for (const [key, response] of Object.entries(responses)) {
+            if (lowerMessage.includes(key)) {
+                return response;
+            }
+        }
+
+        // Varsayılan yanıt
+        return 'Bu konuda size yardımcı olmak için daha fazla bilgi verebilirim. Lütfen "yardım" yazarak mevcut seçenekleri görün.';
+    }
+
+    // Bugün için görev önerileri
+    generateTodaySuggestions() {
+        const suggestions = [
+            '💼 İş görevleri: E-posta kontrolü, proje güncellemesi',
+            '🏠 Ev işleri: Çamaşır, market alışverişi',
+            '📚 Eğitim: Ders çalışma, kitap okuma',
+            '🏃‍♂️ Sağlık: Egzersiz, meditasyon',
+            '🎯 Kişisel: Hedef belirleme, planlama'
+        ];
+        
+        return `Bugün için bazı görev önerileri:\n${suggestions.map(s => `• ${s}`).join('\n')}`;
     }
 
     // Alt görev metodları
@@ -697,4 +965,5 @@ let app;
 // Uygulama başlatma
 document.addEventListener('DOMContentLoaded', () => {
     app = new TodoMobile();
+    app.checkAuth();
 });

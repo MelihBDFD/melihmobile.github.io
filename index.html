@@ -177,20 +177,40 @@
             </div>
         </div>
 
-        <!-- Search Modal -->
-        <div class="modal-overlay" id="searchModal">
-            <div class="modal-content search-modal">
+        <!-- Helper Bot Modal -->
+        <div class="modal-overlay" id="helperModal">
+            <div class="modal-content helper-modal">
                 <div class="modal-header">
-                    <h2>Görev Ara</h2>
+                    <h2><i class="fas fa-robot"></i> TodoBot Yardımcı</h2>
                     <button class="btn-icon modal-close">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="search-container">
-                        <input type="text" class="search-input" id="searchInput" placeholder="Görev ara...">
-                        <div class="search-results" id="searchResults">
-                            <!-- Search results will be shown here -->
+                    <div class="helper-content">
+                        <div class="helper-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="helper-messages" id="helperMessages">
+                            <div class="helper-message bot-message">
+                                <div class="message-content">
+                                    Merhaba! Ben TodoBot, görev yönetimi konusunda sana yardımcı olabilirim. Ne yapmak istiyorsun?
+                                </div>
+                            </div>
+                        </div>
+                        <div class="helper-input-container">
+                            <input type="text" class="helper-input" id="helperInput" placeholder="TodoBot'a bir şey sor...">
+                            <button class="btn-primary helper-send" id="helperSend">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="helper-suggestions">
+                            <p>Örnek sorular:</p>
+                            <div class="suggestions">
+                                <button class="suggestion-btn" data-suggestion="Bugün için görev öner">Bugün için görev öner</button>
+                                <button class="suggestion-btn" data-suggestion="Öncelik nasıl ayarlanır?">Öncelik nasıl ayarlanır?</button>
+                                <button class="suggestion-btn" data-suggestion="Alt görev nedir?">Alt görev nedir?</button>
+                            </div>
                         </div>
                     </div>
                 </div>
