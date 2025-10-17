@@ -437,32 +437,35 @@ class TodoMobile {
         this.showNotification(message, 'success');
     }
 
-    // Görev silme
+    // Görev silme - CONFIRM KALDIRILDI
     deleteTask(taskId) {
-        console.log('🔥 Silme işlemi başlatıldı:', taskId);
-        console.log('📋 Mevcut görevler:', this.tasks.length);
+        console.log('🔥🔥🔥 DİREKT SİLME BAŞLADI:', taskId);
+        console.log('📋 Toplam görev sayısı:', this.tasks.length);
+        console.log('🔍 Tüm task ID\'leri:', this.tasks.map(t => t.id));
         
-        if (confirm('Bu görevi silmek istediğinizden emin misiniz?')) {
-            const taskIndex = this.tasks.findIndex(task => task.id === taskId);
-            console.log('📍 Bulunan task index:', taskIndex);
+        const taskIndex = this.tasks.findIndex(task => task.id === taskId);
+        console.log('📍 Bulunan task index:', taskIndex);
+        
+        if (taskIndex !== -1) {
+            const deletedTask = this.tasks[taskIndex];
+            console.log('🗑️ Silinen görev başlığı:', deletedTask.title);
             
-            if (taskIndex !== -1) {
-                const deletedTask = this.tasks[taskIndex];
-                console.log('🗑️ Silinecek görev:', deletedTask.title);
-                
-                this.tasks.splice(taskIndex, 1);
-                this.saveTasks();
-                this.renderTasks();
-                this.showNotification('Görev başarıyla silindi!', 'success');
-                console.log('✅ Görev silindi:', taskId);
-                console.log('📋 Kalan görevler:', this.tasks.length);
-            } else {
-                console.error('❌ Silinecek görev bulunamadı:', taskId);
-                console.log('🔍 Mevcut task ID\'leri:', this.tasks.map(t => t.id));
-                this.showNotification('Görev bulunamadı!', 'error');
-            }
+            // DİREKT SİL - SORU SORMA
+            this.tasks.splice(taskIndex, 1);
+            console.log('💾 Tasks array güncellendi, yeni uzunluk:', this.tasks.length);
+            
+            this.saveTasks();
+            console.log('💾 LocalStorage\'a kaydedildi');
+            
+            this.renderTasks();
+            console.log('🎨 UI yeniden render edildi');
+            
+            this.showNotification(`"${deletedTask.title}" silindi!`, 'success');
+            console.log('✅✅✅ BAŞARIYLA SİLİNDİ:', taskId);
         } else {
-            console.log('🚫 Silme işlemi iptal edildi');
+            console.error('❌❌❌ GÖREV BULUNAMADI:', taskId);
+            console.log('🔍 Aranan ID:', taskId, 'Tip:', typeof taskId);
+            this.showNotification('Görev bulunamadı!', 'error');
         }
     }
 
@@ -630,7 +633,7 @@ class TodoMobile {
                     <button class="task-action-btn edit-btn" onclick="app.editTask('${task.id}')" title="Düzenle">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="task-action-btn delete-btn" onclick="app.deleteTask('${task.id}')" title="Sil">
+                    <button class="task-action-btn delete-btn" onclick="app.deleteTask('${task.id}'); event.stopPropagation();" title="Sil" style="background: #ff4444; color: white;">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -1389,14 +1392,12 @@ class TodoMobile {
     }
 
     clearAllTasks() {
-        if (confirm('TÜM GÖREVLERİ SİLMEK İSTEDİĞİNİZDEN EMİN MİSİNİZ?')) {
-            if (confirm('Bu işlem geri alınamaz! Son kez onaylıyor musunuz?')) {
-                this.tasks = [];
-                this.saveTasks();
-                this.renderTasks();
-                this.showNotification('Tüm görevler silindi!', 'success');
-            }
-        }
+        // DİREKT TEMİZLE - SORU SORMA
+        const taskCount = this.tasks.length;
+        this.tasks = [];
+        this.saveTasks();
+        this.renderTasks();
+        this.showNotification(`${taskCount} görev temizlendi!`, 'success');
         this.closeMenuModal();
     }
 
