@@ -3,32 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bakımdayız</title>
-  <style>
-    body {
-      background-color: #101010;
-      color: white;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-    h1 {
-      font-size: 3em;
-      margin: 0;
-    }
-    p {
-      font-size: 1.2em;
-      color: #ccc;
-      margin-top: 10px;
-    }
-  </style>
+  <title>Yapılacaklar Listesi</title>
+  <link rel="stylesheet" href="styles.css">
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body>
-  <h1>Şu anda bakımda</h1>
-  <p>Lütfen daha sonra tekrar ziyaret edin.</p>
+  <div id="root"></div>
+  <script type="text/babel" src="app.js"></script>
 </body>
 </html>
