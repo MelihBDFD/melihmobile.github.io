@@ -15,6 +15,15 @@ class TodoMobile {
         this.bindEvents();
         this.renderTasks();
         this.setupPWA();
+        this.loadTheme();
+    }
+
+    // Tema yükleme
+    loadTheme() {
+        const savedTheme = localStorage.getItem('todomobile_theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
     }
 
     // Auth kontrolü
@@ -234,6 +243,35 @@ class TodoMobile {
         // Admin panel
         document.getElementById('adminBtn').addEventListener('click', () => {
             this.openAdminModal();
+        });
+
+        // Menü öğeleri
+        document.getElementById('exportData').addEventListener('click', () => {
+            this.exportData();
+        });
+
+        document.getElementById('importData').addEventListener('click', () => {
+            this.importData();
+        });
+
+        document.getElementById('clearAll').addEventListener('click', () => {
+            this.clearAllTasks();
+        });
+
+        document.getElementById('statsBtn').addEventListener('click', () => {
+            this.showStats();
+        });
+
+        document.getElementById('settingsBtn').addEventListener('click', () => {
+            this.showSettings();
+        });
+
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            this.toggleTheme();
+        });
+
+        document.getElementById('aboutBtn').addEventListener('click', () => {
+            this.showAbout();
         });
     }
 
@@ -1148,6 +1186,157 @@ class TodoMobile {
             status.textContent = 'Bildirimler engellenmiş. Tarayıcı ayarlarından izin verin.';
             status.className = 'notification-status error';
         }
+    }
+
+    // Menü işlevleri
+    exportData() {
+        const data = {
+            tasks: this.tasks,
+            notes: localStorage.getItem('todomobile_notes'),
+            user: this.currentUser,
+            exportDate: new Date().toISOString(),
+            version: '1.0'
+        };
+        
+        const dataStr = JSON.stringify(data, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+        const exportFileDefaultName = `todomobile_backup_${new Date().getTime()}.json`;
+        
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+        
+        this.showNotification('Veriler dışa aktarıldı!', 'success');
+        this.closeMenuModal();
+    }
+
+    importData() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (confirm('Mevcut veriler silinecek ve yeni veriler yüklenecek. Devam etmek istiyor musunuz?')) {
+                        if (data.tasks) {
+                            this.tasks = data.tasks;
+                            this.saveTasks();
+                        }
+                        if (data.notes) {
+                            localStorage.setItem('todomobile_notes', data.notes);
+                        }
+                        if (data.user) {
+                            this.saveCurrentUser(data.user);
+                        }
+                        
+                        this.renderTasks();
+                        this.showNotification('Veriler başarıyla içe aktarıldı!', 'success');
+                    }
+                } catch (error) {
+                    this.showNotification('Geçersiz dosya formatı!', 'error');
+                }
+            };
+            reader.readAsText(file);
+        };
+        
+        input.click();
+        this.closeMenuModal();
+    }
+
+    clearAllTasks() {
+        if (confirm('TÜM GÖREVLERİ SİLMEK İSTEDİĞİNİZDEN EMİN MİSİNİZ?')) {
+            if (confirm('Bu işlem geri alınamaz! Son kez onaylıyor musunuz?')) {
+                this.tasks = [];
+                this.saveTasks();
+                this.renderTasks();
+                this.showNotification('Tüm görevler silindi!', 'success');
+            }
+        }
+        this.closeMenuModal();
+    }
+
+    showStats() {
+        const totalTasks = this.tasks.length;
+        const completedTasks = this.tasks.filter(t => t.completed).length;
+        const pendingTasks = totalTasks - completedTasks;
+        const highPriorityTasks = this.tasks.filter(t => t.priority === 'high').length;
+        const overdueTasks = this.tasks.filter(t => {
+            if (!t.dueDate || t.completed) return false;
+            return new Date(t.dueDate) < new Date();
+        }).length;
+        
+        const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+        
+        const statsMessage = `📊 İSTATİSTİKLER\n\n` +
+            `📋 Toplam Görev: ${totalTasks}\n` +
+            `✅ Tamamlanan: ${completedTasks}\n` +
+            `⏳ Bekleyen: ${pendingTasks}\n` +
+            `🔥 Yüksek Öncelik: ${highPriorityTasks}\n` +
+            `⚠️ Geciken: ${overdueTasks}\n` +
+            `📈 Tamamlanma Oranı: %${completionRate}`;
+        
+        alert(statsMessage);
+        this.closeMenuModal();
+    }
+
+    showSettings() {
+        const settings = `⚙️ AYARLAR\n\n` +
+            `🎨 Tema: Otomatik\n` +
+            `🔔 Bildirimler: ${Notification.permission === 'granted' ? 'Açık' : 'Kapalı'}\n` +
+            `💾 Depolama: ${(JSON.stringify(localStorage).length / 1024).toFixed(2)} KB\n` +
+            `📱 PWA: Destekleniyor\n` +
+            `🌐 Dil: Türkçe\n\n` +
+            `Gelişmiş ayarlar için Yönetici Paneli'ni kullanın.`;
+        
+        alert(settings);
+        this.closeMenuModal();
+    }
+
+    toggleTheme() {
+        const body = document.body;
+        const isDark = body.classList.contains('dark-theme');
+        
+        if (isDark) {
+            body.classList.remove('dark-theme');
+            localStorage.setItem('todomobile_theme', 'light');
+            this.showNotification('Açık tema aktif!', 'success');
+        } else {
+            body.classList.add('dark-theme');
+            localStorage.setItem('todomobile_theme', 'dark');
+            this.showNotification('Koyu tema aktif!', 'success');
+        }
+        
+        this.closeMenuModal();
+    }
+
+    showAbout() {
+        const about = `ℹ️ HAKKINDA\n\n` +
+            `📱 TodoMobile v1.0\n` +
+            `🚀 Modern Görev Yöneticisi\n\n` +
+            `✨ Özellikler:\n` +
+            `• Akıllı görev ekleme\n` +
+            `• Alt görev desteği\n` +
+            `• Kategori ve etiketleme\n` +
+            `• Not defteri\n` +
+            `• Yönetici paneli\n` +
+            `• PWA desteği\n\n` +
+            `💻 Teknoloji:\n` +
+            `• HTML5, CSS3, JavaScript\n` +
+            `• Local Storage\n` +
+            `• Progressive Web App\n\n` +
+            `🎨 Tasarım: Glassmorphism\n` +
+            `📅 ${new Date().getFullYear()} - Açık Kaynak`;
+        
+        alert(about);
+        this.closeMenuModal();
     }
 }
 
