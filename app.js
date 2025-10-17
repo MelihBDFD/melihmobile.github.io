@@ -1456,7 +1456,7 @@ class TodoMobile {
 
     showAbout() {
         const about = `ℹ️ HAKKINDA\n\n` +
-            `📱 TodoMobile v1.0\n` +
+            `📱 TO-DO PRO MOBILE v1.0\n` +
             `🚀 Modern Görev Yöneticisi\n\n` +
             `✨ Özellikler:\n` +
             `• Akıllı görev ekleme\n` +
@@ -1714,7 +1714,7 @@ class TodoMobile {
         const pendingTasks = this.tasks.filter(t => !t.completed).length;
         
         if (pendingTasks > 0 && Notification.permission === 'granted') {
-            new Notification('TodoMobile Hatırlatıcı', {
+            new Notification('TO-DO PRO MOBILE Hatırlatıcı', {
                 body: `${pendingTasks} bekleyen göreviniz var!`,
                 icon: '/manifest.json'
             });

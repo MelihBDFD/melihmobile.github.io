@@ -1,6 +1,6 @@
 {
-  "name": "TodoMobile - Akıllı Görev Yöneticisi",
-  "short_name": "TodoMobile",
+  "name": "TO-DO PRO MOBILE - Akıllı Görev Yöneticisi",
+  "short_name": "TO-DO PRO",
   "description": "Modern, mobil uyumlu görev yönetimi uygulaması",
   "start_url": "/",
   "display": "standalone",

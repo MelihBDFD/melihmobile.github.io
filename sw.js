@@ -92,7 +92,7 @@ self.addEventListener('push', (event) => {
     };
 
     event.waitUntil(
-        self.registration.showNotification('TodoMobile', options)
+        self.registration.showNotification('TO-DO PRO MOBILE', options)
     );
 });
 
