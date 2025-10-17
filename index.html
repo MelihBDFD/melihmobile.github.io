@@ -177,6 +177,152 @@
             </div>
         </div>
 
+        <!-- Search Modal -->
+        <div class="modal-overlay" id="searchModal">
+            <div class="modal-content search-modal">
+                <div class="modal-header">
+                    <h2>Görev Ara</h2>
+                    <button class="btn-icon modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="search-container">
+                        <input type="text" class="search-input" id="searchInput" placeholder="Görev ara...">
+                        <div class="search-results" id="searchResults"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtre Modal -->
+        <div class="modal-overlay" id="filterModal">
+            <div class="modal-content filter-modal">
+                <div class="modal-header">
+                    <h2>Filtreler</h2>
+                    <button class="btn-icon modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="filter-options">
+                        <button class="filter-option" data-filter="all">
+                            <i class="fas fa-list"></i>
+                            Tüm Görevler
+                        </button>
+                        <button class="filter-option" data-filter="today">
+                            <i class="fas fa-calendar-day"></i>
+                            Bugün
+                        </button>
+                        <button class="filter-option" data-filter="upcoming">
+                            <i class="fas fa-calendar-alt"></i>
+                            Yaklaşan
+                        </button>
+                        <button class="filter-option" data-filter="overdue">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Geciken
+                        </button>
+                        <button class="filter-option" data-filter="completed">
+                            <i class="fas fa-check-circle"></i>
+                            Tamamlanan
+                        </button>
+                        <button class="filter-option" data-filter="high-priority">
+                            <i class="fas fa-flag"></i>
+                            Yüksek Öncelik
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menü Modal -->
+        <div class="modal-overlay" id="menuModal">
+            <div class="modal-content menu-modal">
+                <div class="modal-header">
+                    <h2>Menü</h2>
+                    <button class="btn-icon modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="menu-items">
+                        <button class="menu-item" id="exportData">
+                            <i class="fas fa-download"></i>
+                            Verileri Dışa Aktar
+                        </button>
+                        <button class="menu-item" id="importData">
+                            <i class="fas fa-upload"></i>
+                            Verileri İçe Aktar
+                        </button>
+                        <button class="menu-item" id="clearAll">
+                            <i class="fas fa-trash"></i>
+                            Tüm Görevleri Temizle
+                        </button>
+                        <button class="menu-item" id="statsBtn">
+                            <i class="fas fa-chart-line"></i>
+                            İstatistikler
+                        </button>
+                        <button class="menu-item" id="settingsBtn">
+                            <i class="fas fa-sliders-h"></i>
+                            Ayarlar
+                        </button>
+                        <button class="menu-item" id="notesBtn">
+                            <i class="fas fa-sticky-note"></i>
+                            Not Defterim
+                        </button>
+                        <button class="menu-item" id="adminBtn">
+                            <i class="fas fa-user-shield"></i>
+                            Yönetici Paneli
+                        </button>
+                        <button class="menu-item" id="themeToggle">
+                            <i class="fas fa-moon"></i>
+                            Koyu Tema
+                        </button>
+                        <button class="menu-item" id="aboutBtn">
+                            <i class="fas fa-info-circle"></i>
+                            Hakkında
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Auth Modal -->
+        <div class="modal-overlay" id="authModal">
+            <div class="modal-content auth-modal">
+                <div class="modal-header">
+                    <h2 id="authTitle">TodoMobile'e Hoş Geldiniz</h2>
+                    <button class="btn-icon modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="auth-tabs">
+                        <button class="auth-tab active" data-tab="login">Giriş Yap</button>
+                        <button class="auth-tab" data-tab="register">Kayıt Ol</button>
+                    </div>
+                    <form class="auth-form" id="authForm">
+                        <div class="form-group" id="nameGroup" style="display: none;">
+                            <label for="authName">Ad Soyad</label>
+                            <input type="text" id="authName" placeholder="Adınızı ve soyadınızı girin">
+                        </div>
+                        <div class="form-group">
+                            <label for="authEmail">E-posta</label>
+                            <input type="email" id="authEmail" placeholder="E-posta adresinizi girin" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="authPassword">Şifre</label>
+                            <input type="password" id="authPassword" placeholder="Şifrenizi girin" required>
+                        </div>
+                        <button type="submit" class="btn-primary auth-btn" id="authBtn">Giriş Yap</button>
+                    </form>
+                    <div class="auth-demo">
+                        <p><strong>Demo Mod:</strong> Herhangi bir e-posta ve şifre ile giriş yapabilirsiniz</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Helper Bot Modal -->
         <div class="modal-overlay" id="helperModal">
             <div class="modal-content helper-modal">
@@ -210,6 +356,121 @@
                                 <button class="suggestion-btn" data-suggestion="Bugün için görev öner">Bugün için görev öner</button>
                                 <button class="suggestion-btn" data-suggestion="Öncelik nasıl ayarlanır?">Öncelik nasıl ayarlanır?</button>
                                 <button class="suggestion-btn" data-suggestion="Alt görev nedir?">Alt görev nedir?</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Not Defteri Modal -->
+        <div class="modal-overlay" id="notesModal">
+            <div class="modal-content notes-modal">
+                <div class="modal-header">
+                    <h2><i class="fas fa-sticky-note"></i> Not Defterim</h2>
+                    <button class="btn-icon modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="notes-container">
+                        <textarea id="notesTextarea" class="notes-textarea" placeholder="Notlarınızı buraya yazın..."></textarea>
+                        <div class="notes-actions">
+                            <button class="btn-secondary" id="clearNotes">
+                                <i class="fas fa-trash"></i>
+                                Temizle
+                            </button>
+                            <button class="btn-primary" id="saveNotes">
+                                <i class="fas fa-save"></i>
+                                Kaydet
+                            </button>
+                        </div>
+                        <div class="notes-info">
+                            <small class="text-muted">Son kaydedilme: <span id="notesLastSaved">Henüz kaydedilmedi</span></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Panel Modal -->
+        <div class="modal-overlay" id="adminModal">
+            <div class="modal-content admin-modal">
+                <div class="modal-header">
+                    <h2><i class="fas fa-user-shield"></i> Yönetici Paneli</h2>
+                    <button class="btn-icon modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="adminAuth" class="admin-auth">
+                        <div class="admin-lock">
+                            <i class="fas fa-lock"></i>
+                            <h3>Yönetici Girişi</h3>
+                            <p>Bu alana erişmek için yönetici şifresini girin</p>
+                            <div class="form-group">
+                                <input type="password" id="adminPassword" placeholder="Yönetici şifresi..." class="admin-password-input">
+                            </div>
+                            <button class="btn-primary" id="adminLoginBtn">
+                                <i class="fas fa-sign-in-alt"></i>
+                                Giriş Yap
+                            </button>
+                        </div>
+                    </div>
+                    <div id="adminPanel" class="admin-panel" style="display: none;">
+                        <div class="admin-section">
+                            <h3><i class="fas fa-bell"></i> Bildirim Testi</h3>
+                            <p>Tarayıcı bildirimlerini test edin</p>
+                            <button class="btn-primary" id="testNotification">
+                                <i class="fas fa-bell"></i>
+                                Test Bildirimi Gönder
+                            </button>
+                            <div id="notificationStatus" class="notification-status"></div>
+                        </div>
+                        <div class="admin-section">
+                            <h3><i class="fas fa-chart-bar"></i> Sistem İstatistikleri</h3>
+                            <div class="admin-stats">
+                                <div class="stat-card">
+                                    <i class="fas fa-tasks"></i>
+                                    <div class="stat-info">
+                                        <span class="stat-value" id="totalTasks">0</span>
+                                        <span class="stat-label">Toplam Görev</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <i class="fas fa-check-circle"></i>
+                                    <div class="stat-info">
+                                        <span class="stat-value" id="completedTasks">0</span>
+                                        <span class="stat-label">Tamamlanan</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <i class="fas fa-users"></i>
+                                    <div class="stat-info">
+                                        <span class="stat-value" id="totalUsers">1</span>
+                                        <span class="stat-label">Kullanıcı</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <i class="fas fa-database"></i>
+                                    <div class="stat-info">
+                                        <span class="stat-value" id="storageUsed">0 KB</span>
+                                        <span class="stat-label">Depolama</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="admin-section">
+                            <h3><i class="fas fa-tools"></i> Yönetici İşlemleri</h3>
+                            <div class="admin-actions">
+                                <button class="btn-danger" id="clearAllDataAdmin">
+                                    <i class="fas fa-trash-alt"></i>
+                                    Tüm Verileri Temizle
+                                </button>
+                                <button class="btn-secondary" id="exportLogsAdmin">
+                                    <i class="fas fa-file-download"></i>
+                                    Logları Dışa Aktar
+                                </button>
                             </div>
                         </div>
                     </div>

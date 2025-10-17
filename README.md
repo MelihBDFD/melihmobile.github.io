@@ -2,6 +2,8 @@
 
 Modern, mobil uyumlu ve gelişmiş özellikler sunan açık kaynaklı görev yönetimi uygulaması.
 
+🌐 **[Demo'yu Deneyin](https://username.github.io/todomobile/)**
+
 ## ✨ Özellikler
 
 ### 🚀 Temel Özellikler
@@ -13,11 +15,13 @@ Modern, mobil uyumlu ve gelişmiş özellikler sunan açık kaynaklı görev yö
 - **Öncelik Seviyeleri**: Yüksek, orta, düşük öncelik atama
 
 ### 🎨 Kullanıcı Deneyimi
-- **Modern Arayüz**: Material Design prensipleri
+- **Modern Arayüz**: Glassmorphism ve gradient tasarım
 - **Mobil Uyumlu**: Responsive tasarım
 - **Koyu/Açık Tema**: Otomatik tema algılama
 - **Animasyonlar**: Akıcı geçişler ve görsel geri bildirim
 - **Çoklu Dil**: Türkçe arayüz desteği
+- **Not Defteri**: Kişisel notlar için özel alan
+- **Yönetici Paneli**: Gelişmiş kontrol ve istatistikler
 
 ### 💾 Veri Yönetimi
 - **Yerel Depolama**: Tarayıcıda güvenli veri saklama
@@ -41,6 +45,23 @@ npx serve .
 
 # Tarayıcıda açın: http://localhost:8000
 ```
+
+### GitHub Pages'de Yayınlama
+
+1. **Repository Oluştur**: GitHub'da yeni bir repository oluşturun
+2. **Dosyaları Yükle**: Tüm dosyaları repository'e push edin
+   ```bash
+   git init
+   git add .
+   git commit -m "Initial commit"
+   git remote add origin https://github.com/username/todomobile.git
+   git push -u origin main
+   ```
+3. **GitHub Pages Aktif Et**:
+   - Repository Settings → Pages
+   - Source: "main" branch seçin
+   - Save
+4. **Erişim**: `https://username.github.io/todomobile/` adresinden erişin
 
 ### Üretim İçin
 
@@ -78,11 +99,12 @@ npx serve .
 
 ```
 todomobile/
-├── index.html          # Ana sayfa
-├── styles.css          # CSS stilleri
-├── app.js              # Ana JavaScript
-├── manifest.json       # PWA manifest
-└── README.md          # Bu dosya
+├── index.html          # Ana sayfa (GitHub Pages entry point)
+├── styles.css          # Tüm CSS stilleri (birleştirilmiş)
+├── app.js              # Ana JavaScript kodları
+├── manifest.json       # PWA manifest dosyası
+├── .gitignore          # Git ignore dosyası
+└── README.md           # Bu dosya
 ```
 
 ### Teknoloji Yığını

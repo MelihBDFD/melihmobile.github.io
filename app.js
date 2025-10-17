@@ -205,6 +205,36 @@ class TodoMobile {
                 this.closeMenuModal();
             }
         });
+
+        // Filtre
+        document.getElementById('filterBtn').addEventListener('click', () => {
+            this.openFilterModal();
+        });
+
+        document.getElementById('filterModal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close')) {
+                this.closeFilterModal();
+            }
+        });
+
+        // Filtre seçenekleri
+        document.querySelectorAll('.filter-option').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const filter = e.target.closest('.filter-option').dataset.filter;
+                this.setFilter(filter);
+                this.closeFilterModal();
+            });
+        });
+
+        // Not defteri
+        document.getElementById('notesBtn').addEventListener('click', () => {
+            this.openNotesModal();
+        });
+
+        // Admin panel
+        document.getElementById('adminBtn').addEventListener('click', () => {
+            this.openAdminModal();
+        });
     }
 
     // Hızlı görev ekleme
@@ -467,7 +497,7 @@ class TodoMobile {
         return `
             <div class="task-item ${task.completed ? 'completed' : ''}" data-id="${task.id}">
                 <div class="task-main">
-                    <div class="task-checkbox ${task.completed ? 'completed' : ''}" onclick="app.toggleTask('${task.id}')"></div>
+                    <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} onchange="app.toggleTask('${task.id}')">
                     <div class="task-content">
                         <div class="task-title">${this.escapeHtml(task.title)}</div>
                         ${task.description ? `<div class="task-description">${this.escapeHtml(task.description)}</div>` : ''}
@@ -558,6 +588,15 @@ class TodoMobile {
         document.getElementById('menuModal').classList.remove('active');
     }
 
+    // Filtre modalı aç
+    openFilterModal() {
+        document.getElementById('filterModal').classList.add('active');
+    }
+
+    closeFilterModal() {
+        document.getElementById('filterModal').classList.remove('active');
+    }
+
     bindSearchEvents() {
         const searchInput = document.getElementById('searchInput');
         const searchResults = document.getElementById('searchResults');
@@ -644,9 +683,7 @@ class TodoMobile {
     formatDate(date) {
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        
+
         // Saat farkı
         const diffTime = date.getTime() - now.getTime();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -659,7 +696,7 @@ class TodoMobile {
                 hour: '2-digit',
                 minute: '2-digit'
             })}`;
-        } else if (date >= today && date < tomorrow) {
+        } else if (date >= today && date < new Date(today.getTime() + 24 * 60 * 60 * 1000)) {
             // Bugün
             return `Bugün ${date.toLocaleTimeString('tr-TR', {
                 hour: '2-digit',
@@ -796,7 +833,7 @@ class TodoMobile {
 
         // Enter ile gönderme
         helperInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
+            if (e.target.classList.contains('helper-input') && e.key === 'Enter') {
                 helperSend.click();
             }
         });
@@ -955,6 +992,161 @@ class TodoMobile {
             task.subtasks[subtaskIndex].completed = !task.subtasks[subtaskIndex].completed;
             this.saveTasks();
             this.renderTasks();
+        }
+    }
+
+    // Not defteri metodları
+    openNotesModal() {
+        document.getElementById('notesModal').classList.add('active');
+        this.loadNotes();
+        this.bindNotesEvents();
+    }
+
+    loadNotes() {
+        const notes = localStorage.getItem('todomobile_notes') || '';
+        const lastSaved = localStorage.getItem('todomobile_notes_lastsaved');
+        document.getElementById('notesTextarea').value = notes;
+        if (lastSaved) {
+            document.getElementById('notesLastSaved').textContent = new Date(lastSaved).toLocaleString('tr-TR');
+        }
+    }
+
+    bindNotesEvents() {
+        document.getElementById('saveNotes').onclick = () => {
+            const notes = document.getElementById('notesTextarea').value;
+            localStorage.setItem('todomobile_notes', notes);
+            localStorage.setItem('todomobile_notes_lastsaved', new Date().toISOString());
+            document.getElementById('notesLastSaved').textContent = new Date().toLocaleString('tr-TR');
+            this.showNotification('Notlar kaydedildi!', 'success');
+        };
+
+        document.getElementById('clearNotes').onclick = () => {
+            if (confirm('Tüm notları silmek istediğinizden emin misiniz?')) {
+                document.getElementById('notesTextarea').value = '';
+                localStorage.removeItem('todomobile_notes');
+                localStorage.removeItem('todomobile_notes_lastsaved');
+                document.getElementById('notesLastSaved').textContent = 'Henüz kaydedilmedi';
+                this.showNotification('Notlar temizlendi!', 'success');
+            }
+        };
+
+        document.getElementById('notesModal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close')) {
+                document.getElementById('notesModal').classList.remove('active');
+            }
+        });
+    }
+
+    // Admin panel metodları
+    openAdminModal() {
+        document.getElementById('adminModal').classList.add('active');
+        this.bindAdminEvents();
+    }
+
+    bindAdminEvents() {
+        const ADMIN_PASSWORD = 'WelcomeOwner';
+
+        document.getElementById('adminLoginBtn').onclick = () => {
+            const password = document.getElementById('adminPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                document.getElementById('adminAuth').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                this.loadAdminStats();
+                this.showNotification('Yönetici paneline hoş geldiniz!', 'success');
+            } else {
+                this.showNotification('Hatalı şifre!', 'error');
+            }
+        };
+
+        document.getElementById('adminPassword').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('adminLoginBtn').click();
+            }
+        });
+
+        document.getElementById('testNotification').onclick = () => {
+            this.testNotification();
+        };
+
+        document.getElementById('clearAllDataAdmin').onclick = () => {
+            if (confirm('TÜM VERİLERİ SİLMEK İSTEDİĞİNİZDEN EMİN MİSİNİZ? Bu işlem geri alınamaz!')) {
+                if (confirm('Son kez soruyorum: Tüm görevler, notlar ve ayarlar silinecek!')) {
+                    localStorage.clear();
+                    this.showNotification('Tüm veriler temizlendi!', 'success');
+                    setTimeout(() => location.reload(), 1500);
+                }
+            }
+        };
+
+        document.getElementById('exportLogsAdmin').onclick = () => {
+            const logs = {
+                tasks: this.tasks,
+                notes: localStorage.getItem('todomobile_notes'),
+                user: this.currentUser,
+                exportDate: new Date().toISOString()
+            };
+            const dataStr = JSON.stringify(logs, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            const exportFileDefaultName = `todomobile_logs_${new Date().getTime()}.json`;
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            this.showNotification('Loglar dışa aktarıldı!', 'success');
+        };
+
+        document.getElementById('adminModal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close')) {
+                document.getElementById('adminModal').classList.remove('active');
+                document.getElementById('adminAuth').style.display = 'flex';
+                document.getElementById('adminPanel').style.display = 'none';
+                document.getElementById('adminPassword').value = '';
+            }
+        });
+    }
+
+    loadAdminStats() {
+        const totalTasks = this.tasks.length;
+        const completedTasks = this.tasks.filter(t => t.completed).length;
+        const storageUsed = (JSON.stringify(localStorage).length / 1024).toFixed(2);
+
+        document.getElementById('totalTasks').textContent = totalTasks;
+        document.getElementById('completedTasks').textContent = completedTasks;
+        document.getElementById('storageUsed').textContent = storageUsed + ' KB';
+    }
+
+    async testNotification() {
+        const status = document.getElementById('notificationStatus');
+        
+        if (!('Notification' in window)) {
+            status.textContent = 'Bu tarayıcı bildirimleri desteklemiyor!';
+            status.className = 'notification-status error';
+            return;
+        }
+
+        if (Notification.permission === 'granted') {
+            new Notification('TodoMobile Test', {
+                body: 'Bildirimler başarıyla çalışıyor! 🎉',
+                icon: '/manifest.json'
+            });
+            status.textContent = 'Test bildirimi gönderildi! ✅';
+            status.className = 'notification-status success';
+        } else if (Notification.permission !== 'denied') {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                new Notification('TodoMobile Test', {
+                    body: 'Bildirimler başarıyla çalışıyor! 🎉',
+                    icon: '/manifest.json'
+                });
+                status.textContent = 'Test bildirimi gönderildi! ✅';
+                status.className = 'notification-status success';
+            } else {
+                status.textContent = 'Bildirim izni reddedildi!';
+                status.className = 'notification-status error';
+            }
+        } else {
+            status.textContent = 'Bildirimler engellenmiş. Tarayıcı ayarlarından izin verin.';
+            status.className = 'notification-status error';
         }
     }
 }
