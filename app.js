@@ -306,8 +306,7 @@ class TodoMobile {
         document.addEventListener('click', handleMobileClick);
         document.addEventListener('touchend', handleMobileClick);
 
-        // Görev butonları için güçlendirilmiş event delegation
-        this.setupTaskButtonEvents();
+        // Basit onclick event'leri kullanıyoruz artık
 
         // Sayfa yenileme butonu
         document.getElementById('refreshBtn').addEventListener('click', () => {
@@ -628,10 +627,10 @@ class TodoMobile {
                     </div>
                 </div>
                 <div class="task-actions">
-                    <button class="task-action-btn edit-btn" data-task-id="${task.id}" title="Düzenle">
+                    <button class="task-action-btn edit-btn" onclick="app.editTask('${task.id}')" title="Düzenle">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="task-action-btn delete-btn" data-task-id="${task.id}" title="Sil">
+                    <button class="task-action-btn delete-btn" onclick="app.deleteTask('${task.id}')" title="Sil">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
