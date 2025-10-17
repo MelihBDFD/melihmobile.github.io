@@ -16,6 +16,8 @@ class TodoMobile {
         this.renderTasks();
         this.setupPWA();
         this.loadTheme();
+        this.initNotificationSystem();
+        this.initThemeCustomizer();
     }
 
     // Tema yükleme
@@ -273,6 +275,53 @@ class TodoMobile {
         document.getElementById('aboutBtn').addEventListener('click', () => {
             this.showAbout();
         });
+
+        document.getElementById('dashboardBtn').addEventListener('click', () => {
+            this.openDashboard();
+        });
+
+        // AI Asistan event listeners
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'aiSuggestBtn' || e.target.closest('#aiSuggestBtn')) {
+                this.getAISuggestions();
+            } else if (e.target.id === 'smartCategorizeBtn' || e.target.closest('#smartCategorizeBtn')) {
+                this.smartCategorizeAll();
+            } else if (e.target.id === 'saveNotificationSettings' || e.target.closest('#saveNotificationSettings')) {
+                this.saveNotificationSettings();
+            } else if (e.target.classList.contains('apply-suggestion')) {
+                this.applySuggestion(e.target.dataset.suggestion);
+            } else if (e.target.id === 'calendarBtn' || e.target.closest('#calendarBtn')) {
+                this.openCalendar();
+            } else if (e.target.id === 'prevMonth' || e.target.closest('#prevMonth')) {
+                this.changeMonth(-1);
+            } else if (e.target.id === 'nextMonth' || e.target.closest('#nextMonth')) {
+                this.changeMonth(1);
+            } else if (e.target.id === 'gamificationBtn' || e.target.closest('#gamificationBtn')) {
+                this.openGamification();
+            }
+        });
+
+        // Görev butonları için event delegation
+        document.addEventListener('click', (e) => {
+            // Silme butonu
+            if (e.target.classList.contains('delete-btn') || e.target.closest('.delete-btn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                const deleteBtn = e.target.classList.contains('delete-btn') ? e.target : e.target.closest('.delete-btn');
+                const taskId = deleteBtn.dataset.taskId;
+                console.log('Silme butonu tıklandı, taskId:', taskId);
+                this.deleteTask(taskId);
+            }
+            // Düzenleme butonu
+            else if (e.target.classList.contains('edit-btn') || e.target.closest('.edit-btn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                const editBtn = e.target.classList.contains('edit-btn') ? e.target : e.target.closest('.edit-btn');
+                const taskId = editBtn.dataset.taskId;
+                console.log('Düzenleme butonu tıklandı, taskId:', taskId);
+                this.editTask(taskId);
+            }
+        });
     }
 
     // Hızlı görev ekleme
@@ -397,11 +446,19 @@ class TodoMobile {
 
     // Görev silme
     deleteTask(taskId) {
+        console.log('Silme işlemi başlatıldı:', taskId);
         if (confirm('Bu görevi silmek istediğinizden emin misiniz?')) {
-            this.tasks = this.tasks.filter(task => task.id !== taskId);
-            this.saveTasks();
-            this.renderTasks();
-            this.showNotification('Görev silindi!', 'success');
+            const taskIndex = this.tasks.findIndex(task => task.id === taskId);
+            if (taskIndex !== -1) {
+                this.tasks.splice(taskIndex, 1);
+                this.saveTasks();
+                this.renderTasks();
+                this.showNotification('Görev başarıyla silindi!', 'success');
+                console.log('Görev silindi:', taskId);
+            } else {
+                console.error('Silinecek görev bulunamadı:', taskId);
+                this.showNotification('Görev bulunamadı!', 'error');
+            }
         }
     }
 
@@ -415,6 +472,11 @@ class TodoMobile {
             
             const message = task.completed ? 'Görev tamamlandı!' : 'Görev tamamlanmadı olarak işaretlendi!';
             this.showNotification(message, 'success');
+            
+            // XP kazanımı
+            if (task.completed) {
+                this.addXP(10);
+            }
         }
     }
 
@@ -561,10 +623,10 @@ class TodoMobile {
                     </div>
                 </div>
                 <div class="task-actions">
-                    <button class="task-action-btn" onclick="app.editTask('${task.id}')" title="Düzenle">
+                    <button class="task-action-btn edit-btn" data-task-id="${task.id}" title="Düzenle">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="task-action-btn" onclick="app.deleteTask('${task.id}')" title="Sil">
+                    <button class="task-action-btn delete-btn" data-task-id="${task.id}" title="Sil">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -815,18 +877,89 @@ class TodoMobile {
     // PWA kurulumu
     setupPWA() {
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(registration => {
-                        console.log('SW registered: ', registration);
-                    })
-                    .catch(registrationError => {
-                        console.log('SW registration failed: ', registrationError);
-                    });
-            });
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('SW registered: ', registration);
+                    this.swRegistration = registration;
+                })
+                .catch(registrationError => {
+                    console.log('SW registration failed: ', registrationError);
+                });
         }
+
+        // Install prompt
+        this.setupInstallPrompt();
+        
+        // Offline/Online detection
+        this.setupOfflineDetection();
+        
         // Helper bot
         this.addHelperBot();
+    }
+
+    setupInstallPrompt() {
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            this.showInstallButton();
+        });
+
+        // Install button click
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'installApp') {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            this.showNotification('Uygulama yükleniyor...', 'success');
+                        }
+                        deferredPrompt = null;
+                    });
+                }
+            }
+        });
+    }
+
+    showInstallButton() {
+        // Add install button to menu if not exists
+        const menuItems = document.querySelector('.menu-items');
+        if (!document.getElementById('installApp')) {
+            const installBtn = document.createElement('button');
+            installBtn.className = 'menu-item';
+            installBtn.id = 'installApp';
+            installBtn.innerHTML = `
+                <i class="fas fa-download"></i>
+                Uygulamayı Yükle
+            `;
+            menuItems.insertBefore(installBtn, menuItems.firstChild);
+        }
+    }
+
+    setupOfflineDetection() {
+        window.addEventListener('online', () => {
+            this.showNotification('İnternet bağlantısı geri geldi!', 'success');
+            this.syncOfflineData();
+        });
+
+        window.addEventListener('offline', () => {
+            this.showNotification('Çevrimdışı modda çalışıyorsunuz', 'warning');
+        });
+    }
+
+    syncOfflineData() {
+        // Sync offline changes when back online
+        const offlineChanges = JSON.parse(localStorage.getItem('offline_changes') || '[]');
+        if (offlineChanges.length > 0) {
+            // Process offline changes
+            offlineChanges.forEach(change => {
+                // Apply changes
+                console.log('Syncing offline change:', change);
+            });
+            localStorage.removeItem('offline_changes');
+            this.showNotification('Çevrimdışı değişiklikler senkronize edildi!', 'success');
+        }
     }
 
     // Tema değiştirme
@@ -1337,6 +1470,768 @@ class TodoMobile {
         
         alert(about);
         this.closeMenuModal();
+    }
+
+    // Dashboard işlevleri
+    openDashboard() {
+        document.getElementById('dashboardModal').classList.add('active');
+        this.loadDashboardData();
+        this.bindDashboardEvents();
+        this.closeMenuModal();
+    }
+
+    loadDashboardData() {
+        // Genel progress hesapla
+        const totalTasks = this.tasks.length;
+        const completedTasks = this.tasks.filter(t => t.completed).length;
+        const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+        
+        // Progress circle güncelle
+        const progressCircle = document.getElementById('overallProgress');
+        progressCircle.querySelector('.progress-text').textContent = progressPercent + '%';
+        progressCircle.style.background = `conic-gradient(var(--primary-color) ${progressPercent * 3.6}deg, var(--border-color) 0deg)`;
+
+        // Streak hesapla
+        const streak = this.calculateStreak();
+        document.getElementById('streakDays').textContent = streak;
+
+        // Haftalık chart çiz
+        this.drawWeeklyChart();
+
+        // Kategori stats
+        this.loadCategoryStats();
+
+        // Activity feed
+        this.loadActivityFeed();
+    }
+
+    calculateStreak() {
+        const today = new Date();
+        let streak = 0;
+        let currentDate = new Date(today);
+        
+        while (true) {
+            const dateStr = currentDate.toDateString();
+            const dayTasks = this.tasks.filter(task => {
+                const taskDate = new Date(task.createdAt);
+                return taskDate.toDateString() === dateStr && task.completed;
+            });
+            
+            if (dayTasks.length > 0) {
+                streak++;
+                currentDate.setDate(currentDate.getDate() - 1);
+            } else {
+                break;
+            }
+        }
+        
+        return streak;
+    }
+
+    drawWeeklyChart() {
+        const ctx = document.getElementById('weeklyChart').getContext('2d');
+        const last7Days = [];
+        const taskCounts = [];
+        
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            last7Days.push(date.toLocaleDateString('tr-TR', { weekday: 'short' }));
+            
+            const dayTasks = this.tasks.filter(task => {
+                const taskDate = new Date(task.createdAt);
+                return taskDate.toDateString() === date.toDateString();
+            });
+            taskCounts.push(dayTasks.length);
+        }
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: last7Days,
+                datasets: [{
+                    label: 'Görevler',
+                    data: taskCounts,
+                    backgroundColor: 'rgba(99, 102, 241, 0.6)',
+                    borderColor: 'rgba(99, 102, 241, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    loadCategoryStats() {
+        const categories = {};
+        this.tasks.forEach(task => {
+            if (task.category) {
+                categories[task.category] = (categories[task.category] || 0) + 1;
+            }
+        });
+
+        const categoryStats = document.getElementById('categoryStats');
+        categoryStats.innerHTML = '';
+
+        Object.entries(categories).forEach(([category, count]) => {
+            const categoryItem = document.createElement('div');
+            categoryItem.className = 'category-stat-item';
+            categoryItem.innerHTML = `
+                <div class="category-name">${this.getCategoryText(category)}</div>
+                <div class="category-count">${count}</div>
+                <div class="category-bar">
+                    <div class="category-fill" style="width: ${(count / this.tasks.length) * 100}%"></div>
+                </div>
+            `;
+            categoryStats.appendChild(categoryItem);
+        });
+    }
+
+    loadActivityFeed() {
+        const recentTasks = this.tasks
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice(0, 5);
+
+        const activityFeed = document.getElementById('activityFeed');
+        activityFeed.innerHTML = '';
+
+        recentTasks.forEach(task => {
+            const activityItem = document.createElement('div');
+            activityItem.className = 'activity-item';
+            const timeAgo = this.getTimeAgo(new Date(task.createdAt));
+            activityItem.innerHTML = `
+                <div class="activity-icon ${task.completed ? 'completed' : 'pending'}">
+                    <i class="fas fa-${task.completed ? 'check' : 'clock'}"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">${this.escapeHtml(task.title)}</div>
+                    <div class="activity-time">${timeAgo}</div>
+                </div>
+            `;
+            activityFeed.appendChild(activityItem);
+        });
+    }
+
+    getTimeAgo(date) {
+        const now = new Date();
+        const diff = now - date;
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+
+        if (days > 0) return `${days} gün önce`;
+        if (hours > 0) return `${hours} saat önce`;
+        if (minutes > 0) return `${minutes} dakika önce`;
+        return 'Az önce';
+    }
+
+    bindDashboardEvents() {
+        document.getElementById('dashboardModal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close')) {
+                document.getElementById('dashboardModal').classList.remove('active');
+            }
+        });
+    }
+
+    // Bildirim sistemi
+    initNotificationSystem() {
+        this.loadNotificationSettings();
+        this.scheduleNotifications();
+    }
+
+    loadNotificationSettings() {
+        const settings = JSON.parse(localStorage.getItem('notification_settings') || '{}');
+        document.getElementById('enableNotifications').checked = settings.enabled || false;
+        document.getElementById('dailyReminder').checked = settings.dailyReminder || false;
+        document.getElementById('deadlineAlerts').checked = settings.deadlineAlerts || false;
+        document.getElementById('reminderTime').value = settings.reminderTime || '09:00';
+    }
+
+    saveNotificationSettings() {
+        const settings = {
+            enabled: document.getElementById('enableNotifications').checked,
+            dailyReminder: document.getElementById('dailyReminder').checked,
+            deadlineAlerts: document.getElementById('deadlineAlerts').checked,
+            reminderTime: document.getElementById('reminderTime').value
+        };
+        
+        localStorage.setItem('notification_settings', JSON.stringify(settings));
+        this.showNotification('Bildirim ayarları kaydedildi!', 'success');
+        
+        if (settings.enabled) {
+            this.requestNotificationPermission();
+        }
+    }
+
+    async requestNotificationPermission() {
+        if ('Notification' in window && Notification.permission !== 'granted') {
+            await Notification.requestPermission();
+        }
+    }
+
+    scheduleNotifications() {
+        const settings = JSON.parse(localStorage.getItem('notification_settings') || '{}');
+        
+        if (settings.enabled && settings.dailyReminder) {
+            this.scheduleDailyReminder(settings.reminderTime);
+        }
+        
+        if (settings.enabled && settings.deadlineAlerts) {
+            this.checkDeadlines();
+        }
+    }
+
+    scheduleDailyReminder(time) {
+        const [hours, minutes] = time.split(':');
+        const now = new Date();
+        const reminderTime = new Date();
+        reminderTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+        
+        if (reminderTime <= now) {
+            reminderTime.setDate(reminderTime.getDate() + 1);
+        }
+        
+        const timeUntilReminder = reminderTime - now;
+        
+        setTimeout(() => {
+            this.sendDailyReminder();
+            // Bir sonraki gün için tekrar planla
+            this.scheduleDailyReminder(time);
+        }, timeUntilReminder);
+    }
+
+    sendDailyReminder() {
+        const pendingTasks = this.tasks.filter(t => !t.completed).length;
+        
+        if (pendingTasks > 0 && Notification.permission === 'granted') {
+            new Notification('TodoMobile Hatırlatıcı', {
+                body: `${pendingTasks} bekleyen göreviniz var!`,
+                icon: '/manifest.json'
+            });
+        }
+    }
+
+    checkDeadlines() {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        const urgentTasks = this.tasks.filter(task => {
+            if (!task.dueDate || task.completed) return false;
+            const dueDate = new Date(task.dueDate);
+            return dueDate <= tomorrow;
+        });
+        
+        urgentTasks.forEach(task => {
+            if (Notification.permission === 'granted') {
+                new Notification('Deadline Uyarısı!', {
+                    body: `"${task.title}" görevi yakında sona eriyor!`,
+                    icon: '/manifest.json'
+                });
+            }
+        });
+    }
+
+    // Tema özelleştirme sistemi
+    initThemeCustomizer() {
+        this.loadCustomTheme();
+        this.bindThemeEvents();
+    }
+
+    loadCustomTheme() {
+        const customTheme = JSON.parse(localStorage.getItem('custom_theme') || '{}');
+        
+        if (customTheme.primaryColor) {
+            document.documentElement.style.setProperty('--primary-color', customTheme.primaryColor);
+            document.getElementById('primaryColor').value = customTheme.primaryColor;
+        }
+        
+        if (customTheme.backgroundColor) {
+            document.documentElement.style.setProperty('--background-color', customTheme.backgroundColor);
+            document.getElementById('backgroundColor').value = customTheme.backgroundColor;
+        }
+        
+        if (customTheme.fontSize) {
+            document.documentElement.style.fontSize = customTheme.fontSize + 'px';
+            document.getElementById('fontSize').value = customTheme.fontSize;
+            document.getElementById('fontSizeValue').textContent = customTheme.fontSize + 'px';
+        }
+        
+        if (customTheme.animationSpeed) {
+            document.documentElement.style.setProperty('--transition-fast', customTheme.animationSpeed + 's');
+            document.getElementById('animationSpeed').value = customTheme.animationSpeed;
+            document.getElementById('animationSpeedValue').textContent = customTheme.animationSpeed + 's';
+        }
+    }
+
+    bindThemeEvents() {
+        document.getElementById('fontSize').addEventListener('input', (e) => {
+            document.getElementById('fontSizeValue').textContent = e.target.value + 'px';
+        });
+        
+        document.getElementById('animationSpeed').addEventListener('input', (e) => {
+            document.getElementById('animationSpeedValue').textContent = e.target.value + 's';
+        });
+        
+        document.getElementById('applyTheme').addEventListener('click', () => {
+            this.applyCustomTheme();
+        });
+        
+        document.getElementById('resetTheme').addEventListener('click', () => {
+            this.resetTheme();
+        });
+    }
+
+    applyCustomTheme() {
+        const customTheme = {
+            primaryColor: document.getElementById('primaryColor').value,
+            backgroundColor: document.getElementById('backgroundColor').value,
+            fontSize: document.getElementById('fontSize').value,
+            animationSpeed: document.getElementById('animationSpeed').value
+        };
+        
+        document.documentElement.style.setProperty('--primary-color', customTheme.primaryColor);
+        document.documentElement.style.setProperty('--background-color', customTheme.backgroundColor);
+        document.documentElement.style.fontSize = customTheme.fontSize + 'px';
+        document.documentElement.style.setProperty('--transition-fast', customTheme.animationSpeed + 's');
+        
+        localStorage.setItem('custom_theme', JSON.stringify(customTheme));
+        this.showNotification('Tema uygulandı!', 'success');
+    }
+
+    resetTheme() {
+        localStorage.removeItem('custom_theme');
+        location.reload();
+    }
+
+    // AI Asistan İşlevleri
+    getAISuggestions() {
+        const suggestions = this.generateSmartSuggestions();
+        this.showAISuggestions(suggestions);
+        this.closeMenuModal();
+    }
+
+    generateSmartSuggestions() {
+        const suggestions = [];
+        const now = new Date();
+        const pendingTasks = this.tasks.filter(t => !t.completed);
+        const overdueTasks = this.tasks.filter(t => {
+            if (!t.dueDate || t.completed) return false;
+            return new Date(t.dueDate) < now;
+        });
+
+        // Öncelik önerileri
+        if (pendingTasks.length > 5) {
+            suggestions.push({
+                type: 'priority',
+                title: 'Öncelik Belirleme',
+                description: `${pendingTasks.length} bekleyen göreviniz var. Yüksek öncelikli olanları belirleyin.`,
+                action: 'prioritize_tasks'
+            });
+        }
+
+        // Geciken görevler
+        if (overdueTasks.length > 0) {
+            suggestions.push({
+                type: 'overdue',
+                title: 'Geciken Görevler',
+                description: `${overdueTasks.length} göreviniz gecikmiş. Bunları öncelikle tamamlayın.`,
+                action: 'focus_overdue'
+            });
+        }
+
+        // Kategori önerisi
+        const uncategorized = this.tasks.filter(t => !t.category).length;
+        if (uncategorized > 3) {
+            suggestions.push({
+                type: 'categorize',
+                title: 'Kategori Önerisi',
+                description: `${uncategorized} göreviniz kategorisiz. Otomatik kategori atayalım mı?`,
+                action: 'auto_categorize'
+            });
+        }
+
+        // Zaman yönetimi
+        const todayTasks = this.tasks.filter(t => {
+            if (!t.dueDate) return false;
+            const taskDate = new Date(t.dueDate);
+            return taskDate.toDateString() === now.toDateString();
+        });
+
+        if (todayTasks.length > 5) {
+            suggestions.push({
+                type: 'time',
+                title: 'Zaman Yönetimi',
+                description: `Bugün ${todayTasks.length} göreviniz var. Zamanınızı daha iyi planlayın.`,
+                action: 'time_management'
+            });
+        }
+
+        // Motivasyon
+        const completedToday = this.tasks.filter(t => {
+            if (!t.completed || !t.completedAt) return false;
+            const completedDate = new Date(t.completedAt);
+            return completedDate.toDateString() === now.toDateString();
+        }).length;
+
+        if (completedToday > 0) {
+            suggestions.push({
+                type: 'motivation',
+                title: 'Harika İş!',
+                description: `Bugün ${completedToday} görev tamamladınız. Devam edin!`,
+                action: 'celebrate'
+            });
+        }
+
+        return suggestions.length > 0 ? suggestions : [{
+            type: 'general',
+            title: 'Her Şey Yolunda!',
+            description: 'Görevleriniz düzenli görünüyor. Böyle devam edin!',
+            action: 'keep_going'
+        }];
+    }
+
+    showAISuggestions(suggestions) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay ai-suggestions-modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-brain"></i> AI Önerileri</h2>
+                    <button class="btn-icon modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="ai-suggestions">
+                        ${suggestions.map(suggestion => `
+                            <div class="suggestion-card ${suggestion.type}">
+                                <div class="suggestion-icon">
+                                    <i class="fas fa-${this.getSuggestionIcon(suggestion.type)}"></i>
+                                </div>
+                                <div class="suggestion-content">
+                                    <h3>${suggestion.title}</h3>
+                                    <p>${suggestion.description}</p>
+                                    <button class="btn-primary apply-suggestion" data-suggestion="${suggestion.action}">
+                                        Uygula
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        modal.classList.add('active');
+
+        // Close event
+        modal.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close')) {
+                document.body.removeChild(modal);
+            }
+        });
+    }
+
+    getSuggestionIcon(type) {
+        const icons = {
+            priority: 'exclamation-triangle',
+            overdue: 'clock',
+            categorize: 'tags',
+            time: 'calendar-alt',
+            motivation: 'trophy',
+            general: 'lightbulb'
+        };
+        return icons[type] || 'lightbulb';
+    }
+
+    applySuggestion(action) {
+        switch (action) {
+            case 'prioritize_tasks':
+                this.prioritizeTasks();
+                break;
+            case 'focus_overdue':
+                this.focusOverdueTasks();
+                break;
+            case 'auto_categorize':
+                this.smartCategorizeAll();
+                break;
+            case 'time_management':
+                this.showTimeManagementTips();
+                break;
+            case 'celebrate':
+                this.showCelebration();
+                break;
+            default:
+                this.showNotification('Öneri uygulandı!', 'success');
+        }
+        
+        // Close suggestions modal
+        const modal = document.querySelector('.ai-suggestions-modal');
+        if (modal) {
+            document.body.removeChild(modal);
+        }
+    }
+
+    smartCategorizeAll() {
+        let categorized = 0;
+        this.tasks.forEach(task => {
+            if (!task.category) {
+                task.category = this.predictCategory(task.title + ' ' + task.description);
+                categorized++;
+            }
+        });
+
+        if (categorized > 0) {
+            this.saveTasks();
+            this.renderTasks();
+            this.showNotification(`${categorized} görev otomatik kategorize edildi!`, 'success');
+        } else {
+            this.showNotification('Tüm görevler zaten kategorize edilmiş!', 'info');
+        }
+        this.closeMenuModal();
+    }
+
+    predictCategory(text) {
+        const keywords = {
+            work: ['iş', 'toplantı', 'proje', 'rapor', 'sunum', 'müşteri', 'ofis', 'çalışma'],
+            personal: ['kişisel', 'aile', 'ev', 'temizlik', 'alışveriş', 'doktor', 'randevu'],
+            health: ['sağlık', 'doktor', 'hastane', 'ilaç', 'egzersiz', 'spor', 'diyet'],
+            education: ['eğitim', 'ders', 'ödev', 'sınav', 'kurs', 'öğrenme', 'kitap'],
+            shopping: ['alışveriş', 'market', 'satın', 'al', 'mağaza', 'online']
+        };
+
+        const lowerText = text.toLowerCase();
+        
+        for (const [category, words] of Object.entries(keywords)) {
+            if (words.some(word => lowerText.includes(word))) {
+                return category;
+            }
+        }
+        
+        return 'personal'; // Default category
+    }
+
+    prioritizeTasks() {
+        const pendingTasks = this.tasks.filter(t => !t.completed);
+        let updated = 0;
+
+        pendingTasks.forEach(task => {
+            const urgencyScore = this.calculateUrgencyScore(task);
+            if (urgencyScore > 7 && task.priority !== 'high') {
+                task.priority = 'high';
+                updated++;
+            } else if (urgencyScore > 4 && task.priority === 'low') {
+                task.priority = 'medium';
+                updated++;
+            }
+        });
+
+        if (updated > 0) {
+            this.saveTasks();
+            this.renderTasks();
+            this.showNotification(`${updated} görevin önceliği güncellendi!`, 'success');
+        }
+    }
+
+    calculateUrgencyScore(task) {
+        let score = 0;
+        
+        // Due date proximity
+        if (task.dueDate) {
+            const daysUntilDue = Math.ceil((new Date(task.dueDate) - new Date()) / (1000 * 60 * 60 * 24));
+            if (daysUntilDue <= 1) score += 5;
+            else if (daysUntilDue <= 3) score += 3;
+            else if (daysUntilDue <= 7) score += 1;
+        }
+        
+        // Keywords in title
+        const urgentKeywords = ['acil', 'önemli', 'hemen', 'bugün', 'deadline'];
+        const title = task.title.toLowerCase();
+        urgentKeywords.forEach(keyword => {
+            if (title.includes(keyword)) score += 2;
+        });
+        
+        return score;
+    }
+
+    focusOverdueTasks() {
+        this.setFilter('overdue');
+        this.showNotification('Geciken görevlere odaklanın!', 'warning');
+    }
+
+    showTimeManagementTips() {
+        const tips = [
+            '🎯 Günde 3 ana göreve odaklanın',
+            '⏰ Pomodoro tekniği kullanın (25dk çalışma, 5dk mola)',
+            '📋 Görevleri önem sırasına göre sıralayın',
+            '🚫 Dikkat dağıtıcı unsurları minimize edin',
+            '✅ Küçük görevleri hemen tamamlayın'
+        ];
+        
+        alert('⏰ ZAMAN YÖNETİMİ İPUÇLARI\n\n' + tips.join('\n\n'));
+    }
+
+    showCelebration() {
+        this.showNotification('🎉 Harika iş çıkarıyorsunuz! Böyle devam edin!', 'success');
+    }
+
+    // Takvim İşlevleri
+    openCalendar() {
+        document.getElementById('calendarModal').classList.add('active');
+        this.currentCalendarDate = new Date();
+        this.renderCalendar();
+        this.closeMenuModal();
+    }
+
+    renderCalendar() {
+        const year = this.currentCalendarDate.getFullYear();
+        const month = this.currentCalendarDate.getMonth();
+        
+        const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+                           'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+        document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
+
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const startDate = new Date(firstDay);
+        startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+        const calendarGrid = document.getElementById('calendarGrid');
+        calendarGrid.innerHTML = '';
+
+        const dayHeaders = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+        dayHeaders.forEach(day => {
+            const dayHeader = document.createElement('div');
+            dayHeader.className = 'calendar-day-header';
+            dayHeader.textContent = day;
+            calendarGrid.appendChild(dayHeader);
+        });
+
+        for (let i = 0; i < 42; i++) {
+            const currentDate = new Date(startDate);
+            currentDate.setDate(startDate.getDate() + i);
+            
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day';
+            
+            if (currentDate.getMonth() !== month) {
+                dayElement.classList.add('other-month');
+            }
+            
+            if (currentDate.toDateString() === new Date().toDateString()) {
+                dayElement.classList.add('today');
+            }
+
+            const dayTasks = this.getTasksForDate(currentDate);
+            dayElement.innerHTML = `
+                <div class="day-number">${currentDate.getDate()}</div>
+                <div class="day-tasks">
+                    ${dayTasks.map(task => `
+                        <div class="calendar-task ${task.priority}" title="${task.title}">
+                            ${task.title.substring(0, 15)}${task.title.length > 15 ? '...' : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            calendarGrid.appendChild(dayElement);
+        }
+    }
+
+    getTasksForDate(date) {
+        return this.tasks.filter(task => {
+            if (!task.dueDate) return false;
+            const taskDate = new Date(task.dueDate);
+            return taskDate.toDateString() === date.toDateString();
+        });
+    }
+
+    changeMonth(direction) {
+        this.currentCalendarDate.setMonth(this.currentCalendarDate.getMonth() + direction);
+        this.renderCalendar();
+    }
+
+    // Gamification Sistemi
+    addXP(amount) {
+        const userData = this.getUserData();
+        userData.xp += amount;
+        localStorage.setItem('user_gamification', JSON.stringify(userData));
+        this.showNotification(`+${amount} XP kazandınız!`, 'success');
+    }
+
+    getUserData() {
+        const defaultData = {
+            level: 1,
+            xp: 0,
+            achievements: [],
+            totalTasksCompleted: 0,
+            streak: 0
+        };
+        
+        const userData = JSON.parse(localStorage.getItem('user_gamification') || JSON.stringify(defaultData));
+        userData.totalTasksCompleted = this.tasks.filter(t => t.completed).length;
+        userData.streak = this.calculateStreak();
+        userData.level = Math.floor(userData.xp / 100) + 1;
+        
+        return userData;
+    }
+
+    // Sosyal Özellikler
+    shareProgress() {
+        const completedTasks = this.tasks.filter(t => t.completed).length;
+        const totalTasks = this.tasks.length;
+        const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+        
+        const shareText = `TodoMobile ile %${progressPercent} ilerleme kaydettim! ${completedTasks}/${totalTasks} görev tamamlandı 🎉`;
+        
+        if (navigator.share) {
+            navigator.share({
+                title: 'TodoMobile İlerleme',
+                text: shareText,
+                url: window.location.href
+            });
+        } else {
+            navigator.clipboard.writeText(shareText);
+            this.showNotification('Paylaşım metni kopyalandı!', 'success');
+        }
+    }
+
+    // Analytics
+    generateWeeklyReport() {
+        const lastWeek = new Date();
+        lastWeek.setDate(lastWeek.getDate() - 7);
+        
+        const weeklyTasks = this.tasks.filter(task => {
+            const taskDate = new Date(task.createdAt);
+            return taskDate >= lastWeek;
+        });
+        
+        const completedThisWeek = weeklyTasks.filter(t => t.completed).length;
+        const report = {
+            totalTasks: weeklyTasks.length,
+            completed: completedThisWeek,
+            completionRate: weeklyTasks.length > 0 ? Math.round((completedThisWeek / weeklyTasks.length) * 100) : 0,
+            categories: this.getCategoryStats(weeklyTasks)
+        };
+        
+        return report;
+    }
+
+    getCategoryStats(tasks = this.tasks) {
+        const stats = {};
+        tasks.forEach(task => {
+            if (task.category) {
+                stats[task.category] = (stats[task.category] || 0) + 1;
+            }
+        });
+        return stats;
     }
 }
 

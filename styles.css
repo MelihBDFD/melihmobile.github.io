@@ -1467,3 +1467,683 @@ body.dark-theme .stat-card {
     background: rgba(45, 55, 72, 0.9);
     color: var(--text-primary);
 }
+
+/* Dashboard Modal */
+.dashboard-modal .modal-content {
+    max-width: 1000px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.dashboard-container {
+    display: grid;
+    gap: 2rem;
+}
+
+.dashboard-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+}
+
+.dashboard-section h3 {
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+}
+
+.progress-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.progress-card {
+    text-align: center;
+    padding: 1rem;
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.progress-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    background: conic-gradient(var(--primary-color) 0deg, var(--border-color) 0deg);
+    position: relative;
+}
+
+.progress-circle::before {
+    content: '';
+    position: absolute;
+    width: 70px;
+    height: 70px;
+    background: white;
+    border-radius: 50%;
+}
+
+.progress-text {
+    position: relative;
+    z-index: 1;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.streak-counter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.streak-number {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    line-height: 1;
+}
+
+.streak-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.chart-container {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+}
+
+.category-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: white;
+    border-radius: var(--radius-md);
+    margin-bottom: 0.5rem;
+}
+
+.category-name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.category-count {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.category-bar {
+    flex: 2;
+    height: 8px;
+    background: var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.category-fill {
+    height: 100%;
+    background: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: white;
+    border-radius: var(--radius-md);
+    margin-bottom: 0.5rem;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.activity-icon.completed {
+    background: var(--success-color);
+}
+
+.activity-icon.pending {
+    background: var(--warning-color);
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-title {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.activity-time {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* Notification Modal */
+.notification-modal .modal-content {
+    max-width: 500px;
+}
+
+.notification-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.setting-group h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+}
+
+.switch {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+}
+
+.switch input {
+    position: relative;
+    width: 50px;
+    height: 25px;
+    appearance: none;
+    background: var(--border-color);
+    border-radius: 25px;
+    transition: all 0.3s ease;
+}
+
+.switch input:checked {
+    background: var(--primary-color);
+}
+
+.switch input::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 21px;
+    height: 21px;
+    background: white;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.switch input:checked::before {
+    transform: translateX(25px);
+}
+
+/* Theme Modal */
+.theme-modal .modal-content {
+    max-width: 600px;
+}
+
+.theme-customizer {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.theme-section {
+    padding: 1.5rem;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+}
+
+.theme-section h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+}
+
+.color-picker-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.color-picker-group label {
+    min-width: 100px;
+    font-weight: 500;
+}
+
+.color-picker-group input[type="color"] {
+    width: 50px;
+    height: 40px;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+}
+
+.font-controls,
+.animation-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.font-controls label,
+.animation-controls label {
+    min-width: 100px;
+    font-weight: 500;
+}
+
+.font-controls input[type="range"],
+.animation-controls input[type="range"] {
+    flex: 1;
+}
+
+.font-controls span,
+.animation-controls span {
+    min-width: 60px;
+    text-align: right;
+    font-weight: 500;
+    color: var(--primary-color);
+}
+
+/* Calendar Modal */
+.calendar-modal .modal-content {
+    max-width: 800px;
+}
+
+.calendar-container {
+    padding: 1rem;
+}
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.calendar-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.calendar-day-header {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.75rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.calendar-day {
+    background: white;
+    min-height: 80px;
+    padding: 0.5rem;
+    position: relative;
+}
+
+.calendar-day.other-month {
+    background: var(--surface-color);
+    opacity: 0.5;
+}
+
+.calendar-day.today {
+    background: rgba(99, 102, 241, 0.1);
+    border: 2px solid var(--primary-color);
+}
+
+.day-number {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.day-tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.calendar-task {
+    font-size: 0.75rem;
+    padding: 2px 4px;
+    border-radius: 3px;
+    color: white;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.calendar-task.high {
+    background: var(--danger-color);
+}
+
+.calendar-task.medium {
+    background: var(--warning-color);
+}
+
+.calendar-task.low {
+    background: var(--success-color);
+}
+
+.calendar-legend {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+}
+
+.legend-color.high {
+    background: var(--danger-color);
+}
+
+.legend-color.medium {
+    background: var(--warning-color);
+}
+
+.legend-color.low {
+    background: var(--success-color);
+}
+
+/* Gamification Modal */
+.gamification-modal .modal-content {
+    max-width: 700px;
+}
+
+.gamification-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.level-section {
+    background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+    color: white;
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    text-align: center;
+}
+
+.level-info h3 {
+    margin: 0 0 1rem 0;
+    font-size: 2rem;
+}
+
+.xp-bar {
+    width: 100%;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 1rem 0;
+}
+
+.xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #34d399);
+    transition: width 0.5s ease;
+}
+
+.achievements-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+}
+
+.achievements-section h3 {
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+}
+
+.achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.achievement {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: white;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
+}
+
+.achievement.unlocked {
+    border-left: 4px solid var(--success-color);
+}
+
+.achievement.locked {
+    opacity: 0.5;
+    border-left: 4px solid var(--border-color);
+}
+
+.achievement-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.achievement.unlocked .achievement-icon {
+    background: var(--success-color);
+    color: white;
+}
+
+.achievement.locked .achievement-icon {
+    background: var(--border-color);
+    color: var(--text-muted);
+}
+
+.achievement-info h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1rem;
+}
+
+.achievement-info p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.challenge-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+}
+
+.challenge-section h3 {
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+}
+
+.challenge-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border-left: 4px solid var(--warning-color);
+}
+
+.challenge-card.completed {
+    border-left-color: var(--success-color);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.challenge-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    background: var(--warning-color);
+    color: white;
+}
+
+.challenge-card.completed .challenge-icon {
+    background: var(--success-color);
+}
+
+.challenge-text {
+    flex: 1;
+}
+
+.challenge-text p {
+    margin: 0 0 0.5rem 0;
+    font-weight: 500;
+}
+
+.challenge-reward {
+    font-size: 0.875rem;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* AI Suggestions Modal */
+.ai-suggestions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.suggestion-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border-left: 4px solid var(--primary-color);
+}
+
+.suggestion-card.priority {
+    border-left-color: var(--danger-color);
+}
+
+.suggestion-card.overdue {
+    border-left-color: var(--warning-color);
+}
+
+.suggestion-card.categorize {
+    border-left-color: var(--info-color);
+}
+
+.suggestion-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    background: var(--primary-color);
+    color: white;
+}
+
+.suggestion-content {
+    flex: 1;
+}
+
+.suggestion-content h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.125rem;
+}
+
+.suggestion-content p {
+    margin: 0 0 1rem 0;
+    color: var(--text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard-modal .modal-content,
+    .calendar-modal .modal-content,
+    .gamification-modal .modal-content {
+        max-width: 95%;
+        margin: 0.5rem;
+    }
+    
+    .progress-cards,
+    .achievements-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .calendar-legend {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .category-stat-item,
+    .activity-item,
+    .suggestion-card,
+    .challenge-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .calendar-day {
+        min-height: 60px;
+    }
+}
