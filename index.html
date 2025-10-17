@@ -2,9 +2,11 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>To-Do PRO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="To-Do Mobile">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="styles.css">
     <script src="app.js" defer></script>
@@ -16,6 +18,12 @@
             <p>Profesyonel görev yönetimi ve analiz</p>
         </div>
         <div class="header-actions">
+            <span id="userInfo" class="user-info">
+                👤 <span id="currentUserName"></span>
+                <span id="userStats" style="font-size: 0.8rem; opacity: 0.8; margin-left: 8px;">
+                    (<span id="userTaskCount">0</span> görev)
+                </span>
+            </span>
             <button id="themeToggle" aria-label="Tema değiştir">Tema</button>
             <button id="notificationToggle" aria-label="Bildirimleri aktifleştir">Bildirim</button>
             <button id="exportData" aria-label="Görevleri dışa aktar">Dışa aktar</button>

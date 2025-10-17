@@ -22,7 +22,12 @@ const defaultState = {
     formMode: "create",
     editingId: null,
     subtasksBuffer: [],
-    checklistBuffer: []
+    checklistBuffer: [],
+    auth: {
+        isAuthenticated: false,
+        currentUser: null,
+        users: {} 
+    }
 };
 
 let state = { ...defaultState };
@@ -35,6 +40,7 @@ function loadState() {
         state.archive = parsed.archive || [];
         state.categories = parsed.categories || ["Genel"];
         state.settings = { ...defaultState.settings, ...parsed.settings };
+        state.auth = { ...defaultState.auth, ...parsed.auth };
     }
 }
 
@@ -43,7 +49,8 @@ function saveState() {
         tasks: state.tasks,
         archive: state.archive,
         categories: state.categories,
-        settings: state.settings
+        settings: state.settings,
+        auth: state.auth
     }));
 }
 
@@ -398,6 +405,18 @@ function createTaskElement(task, isArchive = false) {
 
 const dom = {
     body: document.body,
+    loginScreen: document.getElementById("loginScreen"),
+    appContent: document.getElementById("appContent"),
+    loginForm: document.getElementById("loginForm"),
+    registerForm: document.getElementById("registerForm"),
+    usernameInput: document.getElementById("usernameInput"),
+    passwordInput: document.getElementById("passwordInput"),
+    registerUsernameInput: document.getElementById("registerUsernameInput"),
+    registerPasswordInput: document.getElementById("registerPasswordInput"),
+    userInfo: document.getElementById("userInfo"),
+    currentUserName: document.getElementById("currentUserName"),
+    userStats: document.getElementById("userStats"),
+    userTaskCount: document.getElementById("userTaskCount"),
     form: document.getElementById("taskForm"),
     title: document.getElementById("taskTitle"),
     description: document.getElementById("taskDescription"),
@@ -475,19 +494,20 @@ function render() {
     const archiveSorted = sortTasks(archiveFiltered);
     renderTaskList(dom.archiveContainer, archiveSorted, true);
     updateAnalytics();
+    updateUserInfo();
 }
 
-function updateAnalytics() {
-    const total = state.tasks.length;
-    const completed = state.tasks.filter(t => t.completedAt).length;
-    const active = total - completed;
-    const overdue = state.tasks.filter(t => t.dueDate && !t.completedAt && new Date(t.dueDate) < Date.now()).length;
-    dom.statTotal.textContent = total;
-    dom.statCompleted.textContent = completed;
-    dom.statActive.textContent = active;
-    dom.statOverdue.textContent = overdue;
-    renderCategoryChart();
-    renderDailySummary();
+function updateUserInfo() {
+    if (state.auth.currentUser) {
+        dom.userInfo.style.display = 'inline-flex';
+        dom.currentUserName.textContent = state.auth.currentUser;
+
+        // Kullanıcının görev sayısını göster
+        const userTaskCount = state.tasks.length;
+        dom.userTaskCount.textContent = userTaskCount;
+    } else {
+        dom.userInfo.style.display = 'none';
+    }
 }
 
 function renderCategoryChart() {
@@ -851,11 +871,109 @@ function handleAddCategoryFromSettings() {
     }
 }
 
-function init() {
-    loadState();
+function hashPassword(password) {
+    let hash = 0;
+    for (let i = 0; i < password.length; i++) {
+        const char = password.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    return hash.toString();
+}
+
+function registerUser(username, password) {
+    const hashedPassword = hashPassword(password);
+    state.auth.users[username] = {
+        password: hashedPassword,
+        createdAt: new Date().toISOString()
+    };
+    state.auth.currentUser = username;
+    state.auth.isAuthenticated = true;
+    saveState();
+    hideLoginScreen();
+    initApp();
+}
+
+function loginUser(username, password) {
+    const user = state.auth.users[username];
+    if (user && user.password === hashPassword(password)) {
+        state.auth.currentUser = username;
+        state.auth.isAuthenticated = true;
+        saveState();
+        hideLoginScreen();
+        initApp();
+        return true;
+    }
+    return false;
+}
+
+function handleLogin(event) {
+    event.preventDefault();
+    const username = dom.usernameInput.value.trim();
+    const password = dom.passwordInput.value;
+    if (loginUser(username, password)) {
+        dom.usernameInput.value = "";
+        dom.passwordInput.value = "";
+    } else {
+        alert("❌ Geçersiz kullanıcı adı veya şifre!\nLütfen tekrar deneyin.");
+        dom.passwordInput.value = "";
+        dom.passwordInput.focus();
+    }
+}
+
+function handleRegister(event) {
+    event.preventDefault();
+    const username = dom.registerUsernameInput.value.trim();
+    const password = dom.registerPasswordInput.value;
+
+    if (username.length < 3) {
+        alert("❌ Kullanıcı adı en az 3 karakter olmalıdır!");
+        dom.registerUsernameInput.focus();
+        return;
+    }
+
+    if (password.length < 4) {
+        alert("❌ Şifre en az 4 karakter olmalıdır!");
+        dom.registerPasswordInput.focus();
+        return;
+    }
+
+    if (state.auth.users[username]) {
+        alert("❌ Bu kullanıcı adı zaten kullanılıyor!");
+        dom.registerUsernameInput.focus();
+        return;
+    }
+
+    registerUser(username, password);
+    dom.registerUsernameInput.value = "";
+    dom.registerPasswordInput.value = "";
+}
+
+function showLoginScreen() {
+    if (!dom.loginScreen) {
+        setTimeout(showLoginScreen, 100);
+        return;
+    }
+    dom.loginScreen.style.display = 'flex';
+    dom.loginForm.style.display = 'block';
+    dom.registerForm.style.display = 'none';
+    dom.appContent.style.display = 'none';
+}
+
+function hideLoginScreen() {
+    if (!dom.loginScreen) {
+        setTimeout(hideLoginScreen, 100);
+        return;
+    }
+    dom.loginScreen.style.display = 'none';
+    dom.appContent.style.display = 'block';
+}
+
+function initApp() {
     applyTheme();
     populateCategories();
     resetFilters();
+    updateUserInfo();
     render();
 
     // Event listener'ları ekle
@@ -914,6 +1032,34 @@ function init() {
 
     setupDragAndDrop();
     setInterval(checkReminders, 60000);
+}
+
+function init() {
+    // İlk kez mi açılıyor kontrolü
+    if (Object.keys(state.auth.users).length === 0) {
+        // İlk kez - kayıt ekranı göster
+        showRegisterScreen();
+    } else {
+        // Daha önce kullanıcı var - giriş ekranı göster
+        showLoginScreen();
+        setupAuthListeners();
+    }
+}
+
+function showRegisterScreen() {
+    if (!dom.loginScreen) {
+        setTimeout(showRegisterScreen, 100);
+        return;
+    }
+    dom.loginScreen.style.display = 'flex';
+    dom.loginForm.style.display = 'none';
+    dom.registerForm.style.display = 'block';
+    dom.appContent.style.display = 'none';
+}
+
+function setupAuthListeners() {
+    if (dom.loginForm) dom.loginForm.addEventListener("submit", handleLogin);
+    if (dom.registerForm) dom.registerForm.addEventListener("submit", handleRegister);
 }
 
 document.addEventListener("DOMContentLoaded", init);
