@@ -1,42 +1,204 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Gelişmiş yapılacaklar uygulaması - Tüm temel ve premium özellikler">
-  <meta name="theme-color" content="#4361ee">
-  <title>Advanced Todo App - Tüm Özellikler</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="TodoApp">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TodoMobile - Akıllı Görev Yöneticisi</title>
+    <meta name="description" content="Modern, mobil uyumlu görev yönetimi uygulaması">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
 </head>
 <body>
-  <div id="root"></div>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">TodoMobile</h1>
+                <div class="header-actions">
+                    <button class="btn-icon" id="searchBtn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="btn-icon" id="filterBtn">
+                        <i class="fas fa-filter"></i>
+                    </button>
+                    <button class="btn-icon" id="menuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
 
-  <!-- Service Worker Kaydı -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then((registration) => {
-            console.log('Service Worker registered successfully:', registration);
-          })
-          .catch((error) => {
-            console.log('Service Worker registration failed:', error);
-          });
-      });
-    }
-  </script>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Quick Add Section -->
+            <section class="quick-add-section">
+                <div class="quick-add-container">
+                    <input type="text" class="quick-add-input" id="quickAddInput" placeholder="Hızlı görev ekle... (örn: 'Alışveriş yap - yarın 15:00')">
+                    <button class="btn-primary" id="quickAddBtn">
+                        <i class="fas fa-plus"></i>
+                        Ekle
+                    </button>
+                </div>
+            </section>
 
-  <!-- React ve ReactDOM CDN'leri -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+            <!-- Filter Tabs -->
+            <section class="filter-tabs">
+                <div class="tabs-container">
+                    <button class="tab-btn active" data-filter="all">
+                        <i class="fas fa-list"></i>
+                        Tümü
+                    </button>
+                    <button class="tab-btn" data-filter="today">
+                        <i class="fas fa-calendar-day"></i>
+                        Bugün
+                    </button>
+                    <button class="tab-btn" data-filter="upcoming">
+                        <i class="fas fa-calendar-alt"></i>
+                        Yaklaşan
+                    </button>
+                    <button class="tab-btn" data-filter="overdue">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Geciken
+                    </button>
+                    <button class="tab-btn" data-filter="completed">
+                        <i class="fas fa-check-circle"></i>
+                        Tamamlanan
+                    </button>
+                    <button class="tab-btn" data-filter="high-priority">
+                        <i class="fas fa-flag"></i>
+                        Yüksek Öncelik
+                    </button>
+                </div>
+            </section>
 
-  <!-- Ana uygulama -->
-  <script type="text/babel" src="app.js"></script>
+            <!-- Tasks List -->
+            <section class="tasks-section">
+                <div class="tasks-container" id="tasksContainer">
+                    <!-- Tasks will be dynamically added here -->
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-list"></i>
+                        <p>Henüz görev yok</p>
+                        <small>Hızlı ekleme alanını kullanarak ilk görevinizi oluşturun</small>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Floating Action Button -->
+        <button class="fab" id="fab">
+            <i class="fas fa-plus"></i>
+        </button>
+
+        <!-- Modals and Overlays -->
+        <!-- Task Detail Modal -->
+        <div class="modal-overlay" id="taskModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Görev Detayları</h2>
+                    <button class="btn-icon modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form class="task-form" id="taskForm">
+                        <div class="form-group">
+                            <label for="taskTitle">Görev Başlığı *</label>
+                            <input type="text" id="taskTitle" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="taskDescription">Açıklama</label>
+                            <textarea id="taskDescription" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="taskPriority">Öncelik</label>
+                                <select id="taskPriority">
+                                    <option value="low">Düşük</option>
+                                    <option value="medium" selected>Orta</option>
+                                    <option value="high">Yüksek</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="taskDueDate">Bitiş Tarihi</label>
+                                <input type="datetime-local" id="taskDueDate">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="taskCategory">Kategori</label>
+                            <select id="taskCategory">
+                                <option value="">Kategori Seçin</option>
+                                <option value="work">İş</option>
+                                <option value="personal">Kişisel</option>
+                                <option value="shopping">Alışveriş</option>
+                                <option value="health">Sağlık</option>
+                                <option value="education">Eğitim</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="taskTags">Etiketler</label>
+                            <input type="text" id="taskTags" placeholder="Etiketleri virgülle ayırın">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Alt Görevler</label>
+                            <div class="subtasks-container" id="subtasksContainer">
+                                <!-- Alt görevler dinamik olarak eklenecek -->
+                            </div>
+                            <button type="button" class="btn-secondary" id="addSubtaskBtn">
+                                <i class="fas fa-plus"></i>
+                                Alt Görev Ekle
+                            </button>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" id="cancelTask">İptal</button>
+                            <button type="submit" class="btn-primary">Kaydet</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Modal -->
+        <div class="modal-overlay" id="searchModal">
+            <div class="modal-content search-modal">
+                <div class="modal-header">
+                    <h2>Görev Ara</h2>
+                    <button class="btn-icon modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="search-container">
+                        <input type="text" class="search-input" id="searchInput" placeholder="Görev ara...">
+                        <div class="search-results" id="searchResults">
+                            <!-- Search results will be shown here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
 </body>
 </html>
