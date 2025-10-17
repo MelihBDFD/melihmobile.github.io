@@ -306,31 +306,8 @@ class TodoMobile {
         document.addEventListener('click', handleMobileClick);
         document.addEventListener('touchend', handleMobileClick);
 
-        // Görev butonları için event delegation (mobil uyumlu)
-        const handleTaskAction = (e) => {
-            // Silme butonu
-            if (e.target.classList.contains('delete-btn') || e.target.closest('.delete-btn')) {
-                e.preventDefault();
-                e.stopPropagation();
-                const deleteBtn = e.target.classList.contains('delete-btn') ? e.target : e.target.closest('.delete-btn');
-                const taskId = deleteBtn.dataset.taskId;
-                console.log('Silme butonu tıklandı (mobil), taskId:', taskId);
-                this.deleteTask(taskId);
-            }
-            // Düzenleme butonu
-            else if (e.target.classList.contains('edit-btn') || e.target.closest('.edit-btn')) {
-                e.preventDefault();
-                e.stopPropagation();
-                const editBtn = e.target.classList.contains('edit-btn') ? e.target : e.target.closest('.edit-btn');
-                const taskId = editBtn.dataset.taskId;
-                console.log('Düzenleme butonu tıklandı (mobil), taskId:', taskId);
-                this.editTask(taskId);
-            }
-        };
-
-        // Hem click hem touchend event'lerini dinle (mobil uyumluluk)
-        document.addEventListener('click', handleTaskAction);
-        document.addEventListener('touchend', handleTaskAction);
+        // Görev butonları için güçlendirilmiş event delegation
+        this.setupTaskButtonEvents();
 
         // Sayfa yenileme butonu
         document.getElementById('refreshBtn').addEventListener('click', () => {
@@ -463,19 +440,30 @@ class TodoMobile {
 
     // Görev silme
     deleteTask(taskId) {
-        console.log('Silme işlemi başlatıldı:', taskId);
+        console.log('🔥 Silme işlemi başlatıldı:', taskId);
+        console.log('📋 Mevcut görevler:', this.tasks.length);
+        
         if (confirm('Bu görevi silmek istediğinizden emin misiniz?')) {
             const taskIndex = this.tasks.findIndex(task => task.id === taskId);
+            console.log('📍 Bulunan task index:', taskIndex);
+            
             if (taskIndex !== -1) {
+                const deletedTask = this.tasks[taskIndex];
+                console.log('🗑️ Silinecek görev:', deletedTask.title);
+                
                 this.tasks.splice(taskIndex, 1);
                 this.saveTasks();
                 this.renderTasks();
                 this.showNotification('Görev başarıyla silindi!', 'success');
-                console.log('Görev silindi:', taskId);
+                console.log('✅ Görev silindi:', taskId);
+                console.log('📋 Kalan görevler:', this.tasks.length);
             } else {
-                console.error('Silinecek görev bulunamadı:', taskId);
+                console.error('❌ Silinecek görev bulunamadı:', taskId);
+                console.log('🔍 Mevcut task ID\'leri:', this.tasks.map(t => t.id));
                 this.showNotification('Görev bulunamadı!', 'error');
             }
+        } else {
+            console.log('🚫 Silme işlemi iptal edildi');
         }
     }
 
@@ -2299,6 +2287,67 @@ class TodoMobile {
                 if (activeModal) {
                     activeModal.classList.remove('active');
                 }
+            }
+        });
+    }
+
+    // Görev butonları için güçlendirilmiş event sistem
+    setupTaskButtonEvents() {
+        // Tüm event türleri için handler
+        const handleTaskButtonClick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Silme butonu kontrolü
+            let deleteBtn = null;
+            if (e.target.classList.contains('delete-btn')) {
+                deleteBtn = e.target;
+            } else if (e.target.closest('.delete-btn')) {
+                deleteBtn = e.target.closest('.delete-btn');
+            } else if (e.target.classList.contains('fa-trash')) {
+                deleteBtn = e.target.closest('.delete-btn');
+            }
+            
+            if (deleteBtn) {
+                const taskId = deleteBtn.dataset.taskId;
+                console.log('🗑️ Silme butonu tıklandı:', taskId);
+                this.deleteTask(taskId);
+                return;
+            }
+            
+            // Düzenleme butonu kontrolü
+            let editBtn = null;
+            if (e.target.classList.contains('edit-btn')) {
+                editBtn = e.target;
+            } else if (e.target.closest('.edit-btn')) {
+                editBtn = e.target.closest('.edit-btn');
+            } else if (e.target.classList.contains('fa-edit')) {
+                editBtn = e.target.closest('.edit-btn');
+            }
+            
+            if (editBtn) {
+                const taskId = editBtn.dataset.taskId;
+                console.log('✏️ Düzenleme butonu tıklandı:', taskId);
+                this.editTask(taskId);
+                return;
+            }
+        };
+
+        // Birden fazla event türü dinle
+        document.addEventListener('click', handleTaskButtonClick, true);
+        document.addEventListener('touchend', handleTaskButtonClick, true);
+        document.addEventListener('touchstart', (e) => {
+            // Touch feedback için
+            if (e.target.closest('.task-action-btn')) {
+                e.target.closest('.task-action-btn').style.transform = 'scale(0.95)';
+            }
+        });
+        document.addEventListener('touchend', (e) => {
+            // Touch feedback temizle
+            if (e.target.closest('.task-action-btn')) {
+                setTimeout(() => {
+                    e.target.closest('.task-action-btn').style.transform = '';
+                }, 150);
             }
         });
     }
