@@ -22,119 +22,10 @@ const defaultState = {
     formMode: "create",
     editingId: null,
     subtasksBuffer: [],
-    checklistBuffer: [],
-    auth: {
-        isAuthenticated: false,
-        currentUser: null,
-        users: {} // şifre hash'leri ile kullanıcı bilgileri
-    }
+    checklistBuffer: []
 };
 
-function showLoginScreen() {
-    dom.appContent.style.display = 'none';
-    dom.loginScreen.style.display = 'flex';
-}
-
-function hideLoginScreen() {
-    dom.loginScreen.style.display = 'none';
-    dom.appContent.style.display = 'block';
-}
-
-function hashPassword(password) {
-    // Basit bir hash fonksiyonu - production'da daha güvenli bir yöntem kullanılmalı
-    let hash = 0;
-    for (let i = 0; i < password.length; i++) {
-        const char = password.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // 32-bit'e dönüştür
-    }
-    return hash.toString();
-}
-
-function registerUser(username, password) {
-    const hashedPassword = hashPassword(password);
-    state.auth.users[username] = {
-        password: hashedPassword,
-        createdAt: new Date().toISOString()
-    };
-    // Kayıt sonrası otomatik giriş
-    state.auth.currentUser = username;
-    state.auth.isAuthenticated = true;
-    saveState();
-    // Doğrudan ana uygulamaya geç
-    hideLoginScreen();
-    continueInit();
-
-    // Hoş geldin mesajı göster (kısa süre sonra)
-    setTimeout(() => {
-        alert(`🎉 Hoş geldiniz, ${username}!\nTo-Do PRO'ya başarıyla kaydoldunuz.`);
-    }, 1000);
-}
-
-function loginUser(username, password) {
-    const user = state.auth.users[username];
-    if (user && user.password === hashPassword(password)) {
-        state.auth.currentUser = username;
-        state.auth.isAuthenticated = true;
-        saveState();
-        hideLoginScreen();
-        continueInit();
-        return true;
-    }
-    return false;
-}
-
-function handleLogin(event) {
-    event.preventDefault();
-    const username = dom.usernameInput.value.trim();
-    const password = dom.passwordInput.value;
-    if (loginUser(username, password)) {
-        dom.usernameInput.value = "";
-        dom.passwordInput.value = "";
-    } else {
-        alert("❌ Geçersiz kullanıcı adı veya şifre!\nLütfen tekrar deneyin.");
-        dom.passwordInput.value = "";
-        dom.passwordInput.focus();
-    }
-}
-
-function handleRegister(event) {
-    event.preventDefault();
-    const username = dom.registerUsernameInput.value.trim();
-    const password = dom.registerPasswordInput.value;
-
-    if (username.length < 3) {
-        alert("❌ Kullanıcı adı en az 3 karakter olmalıdır!");
-        dom.registerUsernameInput.focus();
-        return;
-    }
-
-    if (password.length < 4) {
-        alert("❌ Şifre en az 4 karakter olmalıdır!");
-        dom.registerPasswordInput.focus();
-        return;
-    }
-
-    if (state.auth.users[username]) {
-        alert("❌ Bu kullanıcı adı zaten kullanılıyor!");
-        dom.registerUsernameInput.focus();
-        return;
-    }
-
-    registerUser(username, password);
-    dom.registerUsernameInput.value = "";
-    dom.registerPasswordInput.value = "";
-}
-
-function showRegisterForm() {
-    dom.loginForm.style.display = "none";
-    dom.registerForm.style.display = "block";
-}
-
-function showLoginForm() {
-    dom.registerForm.style.display = "none";
-    dom.loginForm.style.display = "block";
-}
+let state = { ...defaultState };
 
 function loadState() {
     const data = localStorage.getItem("mobil-todo-data");
@@ -144,7 +35,6 @@ function loadState() {
         state.archive = parsed.archive || [];
         state.categories = parsed.categories || ["Genel"];
         state.settings = { ...defaultState.settings, ...parsed.settings };
-        state.auth = { ...defaultState.auth, ...parsed.auth };
     }
 }
 
@@ -153,8 +43,7 @@ function saveState() {
         tasks: state.tasks,
         archive: state.archive,
         categories: state.categories,
-        settings: state.settings,
-        auth: state.auth
+        settings: state.settings
     }));
 }
 
@@ -509,24 +398,6 @@ function createTaskElement(task, isArchive = false) {
 
 const dom = {
     body: document.body,
-    loadingScreen: document.getElementById("loadingScreen"),
-    loginScreen: document.getElementById("loginScreen"),
-    appContent: document.getElementById("appContent"),
-    loginForm: document.getElementById("loginForm"),
-    registerForm: document.getElementById("registerForm"),
-    usernameInput: document.getElementById("usernameInput"),
-    passwordInput: document.getElementById("passwordInput"),
-    registerUsernameInput: document.getElementById("registerUsernameInput"),
-    registerPasswordInput: document.getElementById("registerPasswordInput"),
-    showRegisterBtn: document.getElementById("showRegisterBtn"),
-    showLoginBtn: document.getElementById("showLoginBtn"),
-    loginBtn: document.getElementById("loginBtn"),
-    registerBtn: document.getElementById("registerBtn"),
-    userInfo: document.getElementById("userInfo"),
-    currentUserName: document.getElementById("currentUserName"),
-    userStats: document.getElementById("userStats"),
-    userTaskCount: document.getElementById("userTaskCount"),
-    logoutBtn: document.getElementById("logoutBtn"),
     form: document.getElementById("taskForm"),
     title: document.getElementById("taskTitle"),
     description: document.getElementById("taskDescription"),
@@ -583,11 +454,6 @@ const dom = {
     saveCategory: document.getElementById("saveCategory")
 };
 
-// Güvenli DOM kontrolü fonksiyonu
-function isDomReady() {
-    return dom.loadingScreen && dom.loginScreen && dom.appContent;
-}
-
 function renderTaskList(container, tasks, isArchive = false) {
     container.innerHTML = "";
     if (!tasks.length) {
@@ -609,7 +475,6 @@ function render() {
     const archiveSorted = sortTasks(archiveFiltered);
     renderTaskList(dom.archiveContainer, archiveSorted, true);
     updateAnalytics();
-    updateUserInfo(); // Kullanıcı bilgilerini güncelle
 }
 
 function updateAnalytics() {
@@ -987,145 +852,57 @@ function handleAddCategoryFromSettings() {
 }
 
 function init() {
-    // İlk kez mi açılıyor kontrolü
-    if (Object.keys(state.auth.users).length === 0) {
-        // İlk kez - kayıt ekranı göster
-        showRegisterScreen();
-    } else {
-        // Daha önce kullanıcı var - giriş ekranı göster
-        showLoginScreen();
-        setupAuthListeners();
-    }
-}
-
-function showRegisterScreen() {
-    // DOM elementleri yüklendi mi kontrol et
-    if (!dom.loginScreen) {
-        setTimeout(showRegisterScreen, 100);
-        return;
-    }
-    dom.loginScreen.style.display = 'flex';
-    dom.loginForm.style.display = 'none';
-    dom.registerForm.style.display = 'block';
-    dom.appContent.style.display = 'none';
-}
-
-function showLoginScreen() {
-    // DOM elementleri yüklendi mi kontrol et
-    if (!dom.loginScreen) {
-        setTimeout(showLoginScreen, 100);
-        return;
-    }
-    dom.loginScreen.style.display = 'flex';
-    dom.loginForm.style.display = 'block';
-    dom.registerForm.style.display = 'none';
-    dom.appContent.style.display = 'none';
-}
-
-function hideLoginScreen() {
-    // DOM elementleri yüklendi mi kontrol et
-    if (!dom.loginScreen) {
-        setTimeout(hideLoginScreen, 100);
-        return;
-    }
-    dom.loginScreen.style.display = 'none';
-    dom.appContent.style.display = 'block';
-}
-
-function showRegisterScreen() {
-    // DOM elementleri yüklendi mi kontrol et
-    if (!isDomReady()) {
-        setTimeout(showRegisterScreen, 100);
-        return;
-    }
-    dom.loginScreen.style.display = 'flex';
-    dom.loginForm.style.display = 'none';
-    dom.registerForm.style.display = 'block';
-    dom.appContent.style.display = 'none';
-}
-
-function showLoginScreen() {
-    // DOM elementleri yüklendi mi kontrol et
-    if (!isDomReady()) {
-        setTimeout(showLoginScreen, 100);
-        return;
-    }
-    dom.loginScreen.style.display = 'flex';
-    dom.loginForm.style.display = 'block';
-    dom.registerForm.style.display = 'none';
-    dom.appContent.style.display = 'none';
-}
-
-function hideLoginScreen() {
-    // DOM elementleri yüklendi mi kontrol et
-    if (!isDomReady()) {
-        setTimeout(hideLoginScreen, 100);
-        return;
-    }
-    dom.loginScreen.style.display = 'none';
-    dom.appContent.style.display = 'block';
-}
-
-function continueInit() {
-    // DOM elementleri yüklendi mi kontrol et
-    if (!isDomReady()) {
-        setTimeout(continueInit, 100);
-        return;
-    }
-
     loadState();
     applyTheme();
     populateCategories();
     resetFilters();
-    updateUserInfo();
     render();
 
     // Event listener'ları ekle
-    if (dom.form) dom.form.addEventListener("submit", handleFormSubmit);
-    if (dom.addSubtask) dom.addSubtask.addEventListener("click", handleSubtaskInput);
-    if (dom.subtaskInput) dom.subtaskInput.addEventListener("keypress", event => {
+    dom.form.addEventListener("submit", handleFormSubmit);
+    dom.addSubtask.addEventListener("click", handleSubtaskInput);
+    dom.subtaskInput.addEventListener("keypress", event => {
         if (event.key === "Enter") handleSubtaskInput();
     });
-    if (dom.addChecklist) dom.addChecklist.addEventListener("click", handleChecklistInput);
-    if (dom.checklistInput) dom.checklistInput.addEventListener("keypress", event => {
+    dom.addChecklist.addEventListener("click", handleChecklistInput);
+    dom.checklistInput.addEventListener("keypress", event => {
         if (event.key === "Enter") handleChecklistInput();
     });
-    if (dom.searchInput) dom.searchInput.addEventListener("input", handleSearch);
-    if (dom.filterCategory) dom.filterCategory.addEventListener("change", handleFilterChange);
-    if (dom.filterPriority) dom.filterPriority.addEventListener("change", handleFilterChange);
-    if (dom.filterStartDate) dom.filterStartDate.addEventListener("change", handleFilterChange);
-    if (dom.filterEndDate) dom.filterEndDate.addEventListener("change", handleFilterChange);
-    if (dom.sortSelect) dom.sortSelect.addEventListener("change", handleSortChange);
-    if (dom.listViewBtn) dom.listViewBtn.addEventListener("click", () => handleViewChange("list"));
-    if (dom.cardViewBtn) dom.cardViewBtn.addEventListener("click", () => handleViewChange("card"));
-    if (dom.resetFilters) dom.resetFilters.addEventListener("click", resetFilters);
-    if (dom.selectAll) dom.selectAll.addEventListener("click", handleSelectAll);
-    if (dom.clearSelection) dom.clearSelection.addEventListener("click", () => {
+    dom.searchInput.addEventListener("input", handleSearch);
+    dom.filterCategory.addEventListener("change", handleFilterChange);
+    dom.filterPriority.addEventListener("change", handleFilterChange);
+    dom.filterStartDate.addEventListener("change", handleFilterChange);
+    dom.filterEndDate.addEventListener("change", handleFilterChange);
+    dom.sortSelect.addEventListener("change", handleSortChange);
+    dom.listViewBtn.addEventListener("click", () => handleViewChange("list"));
+    dom.cardViewBtn.addEventListener("click", () => handleViewChange("card"));
+    dom.resetFilters.addEventListener("click", resetFilters);
+    dom.selectAll.addEventListener("click", handleSelectAll);
+    dom.clearSelection.addEventListener("click", () => {
         state.selection.clear();
         render();
     });
-    if (dom.bulkComplete) dom.bulkComplete.addEventListener("click", () => handleBulkAction("complete"));
-    if (dom.bulkDelete) dom.bulkDelete.addEventListener("click", () => handleBulkAction("delete"));
-    if (dom.bulkArchive) dom.bulkArchive.addEventListener("click", () => handleBulkAction("archive"));
-    if (dom.clearArchive) dom.clearArchive.addEventListener("click", () => {
+    dom.bulkComplete.addEventListener("click", () => handleBulkAction("complete"));
+    dom.bulkDelete.addEventListener("click", () => handleBulkAction("delete"));
+    dom.bulkArchive.addEventListener("click", () => handleBulkAction("archive"));
+    dom.clearArchive.addEventListener("click", () => {
         if (confirm("Arşivi temizlemek istediğinizden emin misiniz?")) handleClearArchive();
     });
-    if (dom.settingsForm) dom.settingsForm.addEventListener("submit", handleSettingsSubmit);
-    if (dom.themeToggle) dom.themeToggle.addEventListener("click", toggleTheme);
-    if (dom.notificationToggle) dom.notificationToggle.addEventListener("click", toggleNotifications);
-    if (dom.exportData) dom.exportData.addEventListener("click", exportData);
-    if (dom.importData) dom.importData.addEventListener("change", importData);
-    if (dom.addCategoryFromSettings) dom.addCategoryFromSettings.addEventListener("click", handleAddCategoryFromSettings);
-    if (dom.addCategoryBtn) dom.addCategoryBtn.addEventListener("click", handleAddCategory);
-    if (dom.saveCategory) dom.saveCategory.addEventListener("click", saveNewCategory);
-    if (dom.cancelCategory) dom.cancelCategory.addEventListener("click", cancelNewCategory);
-    if (dom.newCategoryModalInput) dom.newCategoryModalInput.addEventListener("keypress", event => {
+    dom.settingsForm.addEventListener("submit", handleSettingsSubmit);
+    dom.themeToggle.addEventListener("click", toggleTheme);
+    dom.notificationToggle.addEventListener("click", toggleNotifications);
+    dom.exportData.addEventListener("click", exportData);
+    dom.importData.addEventListener("change", importData);
+    dom.addCategoryFromSettings.addEventListener("click", handleAddCategoryFromSettings);
+    dom.addCategoryBtn.addEventListener("click", handleAddCategory);
+    dom.saveCategory.addEventListener("click", saveNewCategory);
+    dom.cancelCategory.addEventListener("click", cancelNewCategory);
+    dom.newCategoryModalInput.addEventListener("keypress", event => {
         if (event.key === "Enter") saveNewCategory();
     });
-    if (dom.categoryModal) dom.categoryModal.addEventListener("click", event => {
+    dom.categoryModal.addEventListener("click", event => {
         if (event.target === dom.categoryModal) cancelNewCategory();
     });
-    if (dom.logoutBtn) dom.logoutBtn.addEventListener("click", logout);
 
     document.addEventListener("keydown", event => {
         if (event.key === "Escape") {
@@ -1135,62 +912,8 @@ function continueInit() {
         }
     });
 
-    if (dom.categoryManager) {
-        dom.categoryManager = document.getElementById("categoryManager");
-    }
-    if (dom.newCategoryInput) {
-        dom.newCategoryInput = document.getElementById("newCategoryInput");
-    }
-    if (dom.addCategoryFromSettings) {
-        dom.addCategoryFromSettings = document.getElementById("addCategoryFromSettings");
-    }
-    if (dom.categoryModal) {
-        dom.categoryModal = document.getElementById("categoryModal");
-    }
-    if (dom.newCategoryModalInput) {
-        dom.newCategoryModalInput = document.getElementById("newCategoryModalInput");
-    }
-    if (dom.cancelCategory) {
-        dom.cancelCategory = document.getElementById("cancelCategory");
-    }
-
     setupDragAndDrop();
     setInterval(checkReminders, 60000);
-
-    // Hide loading screen after initialization
-    setTimeout(() => {
-        if (dom.loadingScreen) {
-            dom.loadingScreen.style.opacity = '0';
-            setTimeout(() => {
-                if (dom.loadingScreen) {
-                    dom.loadingScreen.style.display = 'none';
-                }
-            }, 300);
-        }
-    }, 500);
-}
-
-function updateUserInfo() {
-    if (state.auth.currentUser) {
-        dom.userInfo.style.display = 'inline-flex';
-        dom.currentUserName.textContent = state.auth.currentUser;
-
-        // Kullanıcının görev sayısını göster
-        const userTaskCount = state.tasks.length;
-        dom.userTaskCount.textContent = userTaskCount;
-
-        // Kullanıcıya özel karşılama mesajı
-        const hour = new Date().getHours();
-        let greeting = "Merhaba";
-        if (hour < 12) greeting = "Günaydın";
-        else if (hour < 18) greeting = "İyi günler";
-        else greeting = "İyi akşamlar";
-
-        // Kısa bir selamlama göster (opsiyonel)
-        // console.log(`${greeting}, ${state.auth.currentUser}!`);
-    } else {
-        dom.userInfo.style.display = 'none';
-    }
 }
 
 document.addEventListener("DOMContentLoaded", init);

@@ -5,85 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>To-Do PRO</title>
     <meta name="theme-color" content="#2563eb">
-    <meta name="description" content="Mobil dostu yapılacaklar listesi uygulaması">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="styles.css">
     <script src="app.js" defer></script>
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div id="loadingScreen" class="loading-screen">
-        <div class="loading-content">
-            <div class="loading-spinner"></div>
-            <h2>To-Do PRO</h2>
-            <p>Yükleniyor...</p>
+    <header class="app-header">
+        <div class="brand">
+            <h1>To-Do PRO</h1>
+            <p>Profesyonel görev yönetimi ve analiz</p>
         </div>
-    </div>
-
-    <!-- Login Screen -->
-    <div id="loginScreen" class="auth-screen">
-        <div class="auth-container">
-            <div class="auth-header">
-                <h1>To-Do PRO</h1>
-                <p>Profesyonel görev yönetimi</p>
-            </div>
-
-            <!-- Login Form -->
-            <form id="loginForm" class="auth-form">
-                <h2>Hoş Geldiniz</h2>
-                <p style="text-align: center; margin-bottom: 20px; color: var(--color-muted);">Hesabınıza giriş yapın</p>
-                <div class="form-group">
-                    <label for="usernameInput">Kullanıcı Adı</label>
-                    <input type="text" id="usernameInput" required>
-                </div>
-                <div class="form-group">
-                    <label for="passwordInput">Şifre</label>
-                    <input type="password" id="passwordInput" required>
-                </div>
-                <button type="submit" id="loginBtn" class="auth-btn primary">Giriş Yap</button>
-            </form>
-
-            <!-- Register Form -->
-            <form id="registerForm" class="auth-form">
-                <h2>İlk Kez Mi?</h2>
-                <p style="text-align: center; margin-bottom: 20px; color: var(--color-muted);">Yeni hesap oluşturun</p>
-                <div class="form-group">
-                    <label for="registerUsernameInput">Kullanıcı Adı</label>
-                    <input type="text" id="registerUsernameInput" required>
-                </div>
-                <div class="form-group">
-                    <label for="registerPasswordInput">Şifre</label>
-                    <input type="password" id="registerPasswordInput" required>
-                </div>
-                <button type="submit" id="registerBtn" class="auth-btn primary">Kaydol</button>
-            </form>
+        <div class="header-actions">
+            <button id="themeToggle" aria-label="Tema değiştir">Tema</button>
+            <button id="notificationToggle" aria-label="Bildirimleri aktifleştir">Bildirim</button>
+            <button id="exportData" aria-label="Görevleri dışa aktar">Dışa aktar</button>
+            <label class="import-label" for="importData">İçe aktar</label>
+            <input type="file" id="importData" accept="application/json">
         </div>
-    </div>
+    </header>
 
-    <!-- App Content -->
-    <div id="appContent" class="app-wrapper">
-        <header class="app-header">
-            <div class="brand">
-                <h1>To-Do PRO</h1>
-                <p>Profesyonel görev yönetimi ve analiz</p>
-            </div>
-            <div class="header-actions">
-                <span id="userInfo" class="user-info">
-                    👤 <span id="currentUserName"></span>
-                    <span id="userStats" style="font-size: 0.8rem; opacity: 0.8; margin-left: 8px;">
-                        (<span id="userTaskCount">0</span> görev)
-                    </span>
-                </span>
-                <button id="themeToggle" aria-label="Tema değiştir">Tema</button>
-                <button id="notificationToggle" aria-label="Bildirimleri aktifleştir">Bildirim</button>
-                <button id="exportData" aria-label="Görevleri dışa aktar">Dışa aktar</button>
-                <label class="import-label" for="importData">İçe aktar</label>
-                <input type="file" id="importData" accept="application/json">
-                <button id="logoutBtn" class="auth-btn secondary" style="margin-left: 8px;">Çıkış</button>
-            </div>
-        </header>
-
-        <main class="layout">
+    <main class="layout">
         <section class="panel" id="taskFormPanel">
             <h2>Yeni Görev</h2>
             <form id="taskForm">
@@ -305,5 +246,4 @@
         </div>
     </div>
 </body>
-</html>
 </html>
