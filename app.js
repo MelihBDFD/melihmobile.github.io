@@ -18,6 +18,7 @@ class TodoMobile {
         this.loadTheme();
         this.initNotificationSystem();
         this.initThemeCustomizer();
+        this.optimizeForMobile();
     }
 
     // Tema yükleme
@@ -280,8 +281,8 @@ class TodoMobile {
             this.openDashboard();
         });
 
-        // AI Asistan event listeners
-        document.addEventListener('click', (e) => {
+        // Mobil uyumlu event listeners
+        const handleMobileClick = (e) => {
             if (e.target.id === 'aiSuggestBtn' || e.target.closest('#aiSuggestBtn')) {
                 this.getAISuggestions();
             } else if (e.target.id === 'smartCategorizeBtn' || e.target.closest('#smartCategorizeBtn')) {
@@ -299,7 +300,11 @@ class TodoMobile {
             } else if (e.target.id === 'gamificationBtn' || e.target.closest('#gamificationBtn')) {
                 this.openGamification();
             }
-        });
+        };
+
+        // Hem click hem touchend için
+        document.addEventListener('click', handleMobileClick);
+        document.addEventListener('touchend', handleMobileClick);
 
         // Görev butonları için event delegation (mobil uyumlu)
         const handleTaskAction = (e) => {
@@ -326,6 +331,14 @@ class TodoMobile {
         // Hem click hem touchend event'lerini dinle (mobil uyumluluk)
         document.addEventListener('click', handleTaskAction);
         document.addEventListener('touchend', handleTaskAction);
+
+        // Sayfa yenileme butonu
+        document.getElementById('refreshBtn').addEventListener('click', () => {
+            this.refreshPage();
+        });
+
+        // Modal kapatma için mobil uyumlu event'ler
+        this.setupMobileModalEvents();
     }
 
     // Hızlı görev ekleme
@@ -2236,6 +2249,90 @@ class TodoMobile {
             }
         });
         return stats;
+    }
+
+    // Sayfa yenileme
+    refreshPage() {
+        // Animasyonlu yenileme
+        const refreshBtn = document.getElementById('refreshBtn');
+        refreshBtn.style.transform = 'rotate(360deg)';
+        refreshBtn.style.transition = 'transform 0.5s ease';
+        
+        setTimeout(() => {
+            location.reload();
+        }, 500);
+    }
+
+    // Mobil modal event'leri
+    setupMobileModalEvents() {
+        // Tüm modal'lar için mobil uyumlu kapatma
+        const modals = [
+            'taskModal', 'searchModal', 'filterModal', 'menuModal', 
+            'notesModal', 'adminModal', 'dashboardModal', 'notificationModal', 
+            'themeModal', 'calendarModal', 'gamificationModal'
+        ];
+
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                // Touch ve click event'leri
+                const handleModalClose = (e) => {
+                    if (e.target.classList.contains('modal-overlay') || 
+                        e.target.classList.contains('modal-close') ||
+                        e.target.closest('.modal-close')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        modal.classList.remove('active');
+                        console.log(`${modalId} kapatıldı (mobil)`);
+                    }
+                };
+
+                modal.addEventListener('click', handleModalClose);
+                modal.addEventListener('touchend', handleModalClose);
+            }
+        });
+
+        // ESC tuşu ile kapatma (mobil klavye desteği)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const activeModal = document.querySelector('.modal-overlay.active');
+                if (activeModal) {
+                    activeModal.classList.remove('active');
+                }
+            }
+        });
+    }
+
+    // Mobil dokunma optimizasyonu
+    optimizeForMobile() {
+        // Viewport meta tag kontrolü
+        let viewport = document.querySelector('meta[name="viewport"]');
+        if (!viewport) {
+            viewport = document.createElement('meta');
+            viewport.name = 'viewport';
+            document.head.appendChild(viewport);
+        }
+        viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+
+        // Touch action optimizasyonu
+        document.body.style.touchAction = 'manipulation';
+        
+        // iOS Safari için özel optimizasyonlar
+        if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+            document.body.classList.add('ios-device');
+            // iOS'ta bounce effect'i kaldır
+            document.addEventListener('touchmove', (e) => {
+                if (e.target.closest('.modal-content') || e.target.closest('.tasks-container')) {
+                    return;
+                }
+                e.preventDefault();
+            }, { passive: false });
+        }
+
+        // Android için özel optimizasyonlar
+        if (/Android/.test(navigator.userAgent)) {
+            document.body.classList.add('android-device');
+        }
     }
 }
 

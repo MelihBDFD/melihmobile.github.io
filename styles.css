@@ -2203,4 +2203,87 @@ body.dark-theme .stat-card {
         font-size: 0.7rem;
         padding: 0.2rem 0.4rem;
     }
+    
+    /* Mobil modal optimizasyonu */
+    .modal-overlay {
+        padding: 0.5rem;
+    }
+    
+    .modal-content {
+        max-height: 90vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .modal-close {
+        min-width: 48px;
+        min-height: 48px;
+        padding: 0.75rem;
+        font-size: 1.25rem;
+    }
+    
+    /* Header butonları mobil optimizasyonu */
+    .btn-icon {
+        min-width: 48px;
+        min-height: 48px;
+        padding: 0.75rem;
+        font-size: 1.125rem;
+    }
+    
+    /* Quick add input mobil optimizasyonu */
+    .quick-add-input {
+        font-size: 16px; /* iOS zoom'u önlemek için */
+        padding: 1rem;
+    }
+    
+    .quick-add-btn {
+        min-width: 48px;
+        min-height: 48px;
+        padding: 1rem;
+    }
+    
+    /* Task item mobil optimizasyonu */
+    .task-item {
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .task-checkbox {
+        min-width: 24px;
+        min-height: 24px;
+        margin-right: 1rem;
+    }
+    
+    /* Menu items mobil optimizasyonu */
+    .menu-item {
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
+        min-height: 56px;
+    }
+}
+
+/* iOS özel optimizasyonlar */
+.ios-device {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.ios-device .modal-content {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Android özel optimizasyonlar */
+.android-device .btn-icon:active,
+.android-device .task-action-btn:active {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Refresh button animasyonu */
+#refreshBtn {
+    transition: transform 0.5s ease;
+}
+
+#refreshBtn:active {
+    transform: scale(0.95);
 }
