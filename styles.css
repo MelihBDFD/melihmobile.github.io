@@ -149,6 +149,7 @@ main.layout {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--panel-width)), 1fr));
     gap: var(--gap);
+    align-items: start;
 }
 
 .panel {
@@ -160,7 +161,8 @@ main.layout {
     box-shadow: var(--shadow-sm);
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 16px;
+    overflow: hidden;
 }
 
 [data-theme="dark"] .panel {
@@ -207,6 +209,22 @@ main.layout {
 .inline-field {
     display: flex;
     gap: 8px;
+    align-items: center;
+}
+
+.inline-field select {
+    flex: 1;
+}
+
+.inline-field button {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 8px;
 }
 
 input,
@@ -215,7 +233,8 @@ textarea {
     background: rgba(148, 163, 184, 0.14);
     border: 1px solid rgba(148, 163, 184, 0.25);
     border-radius: var(--radius-sm);
-    padding: 10px 14px;
+    padding: 12px 14px;
+    margin: 0;
     transition: border var(--transition), background var(--transition), box-shadow var(--transition);
 }
 
